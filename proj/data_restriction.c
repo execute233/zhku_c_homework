@@ -46,21 +46,21 @@ static enum RestrictionType checkData(WaterQuality data, DataRestrictionPointer 
         && data->doxygen >= normal->minDoxygen && data->doxygen <= normal->maxDoxygen
         && data->ph >= normal->minPh && data->ph <= normal->maxPh
         && data->ammonia >= normal->minAmmonia && data->ammonia <= normal->maxAmmonia) {
-        return NORMAL;
+        return RestrictionType_Normal;
     }
     if (data->tmp >= serious->minTmp && data->tmp <= serious->maxTmp
         && data->doxygen >= serious->minDoxygen && data->doxygen <= serious->maxDoxygen
         && data->ph >= serious->minPh && data->ph <= serious->maxPh
         && data->ammonia >= serious->minAmmonia && data->ammonia <= serious->maxAmmonia) {
-        return NORMAL_ALERT;
+        return RestrictionType_Warning;
     }
     if (data->tmp >= valid->minTmp && data->tmp <= valid->maxTmp
         && data->doxygen >= valid->minDoxygen && data->doxygen <= valid->maxDoxygen
         && data->ph >= valid->minPh && data->ph <= valid->maxPh
         && data->ammonia >= valid->minAmmonia && data->ammonia <= valid->maxAmmonia) {
-        return SERIOUS_ALERT;
+        return RestrictionType_Error;
     }
-    return INVALID_DATA;
+    return RestrictionType_InvalidData;
 }
 // 数据校验回调方法，当某个字段不符合检验要求时，会回调传入的方法
 // 回调包括字段名(即WaterQuality里的字段名), 是超过（1）范围还是低于范围（-1）,包括该字段的值
