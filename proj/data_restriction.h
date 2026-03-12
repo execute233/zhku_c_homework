@@ -9,7 +9,7 @@
 // 当数据在严重警告范围内时，但不在一般警告范围内，处于一般警告状态
 // 当数据超出严重警告范围时，但数据在合法范围内，处于严重警告状态
 // 当数据超出了其校验范围时，该数据应当丢弃，因为数据不合法
-typedef struct DataRestriction {
+typedef struct {
     float minTmp;
     float maxTmp;
     float minDoxygen;
@@ -18,14 +18,18 @@ typedef struct DataRestriction {
     float maxPh;
     float minAmmonia;
     float maxAmmonia;
-} * DataRestrictionPointer;
+} DataRestriction;
+
+typedef DataRestriction *DataRestrictionPointer;
+
 // 用于指示数据的警告范围、或者数据是否合法
 enum RestrictionType {
-    NORMAL, // 正常
-    NORMAL_ALERT, // 一般警告
-    SERIOUS_ALERT, // 严重警告
-    INVALID_DATA // 非法数据
+    RestrictionType_Normal, // 正常
+    RestrictionType_Warning, // 一般警告
+    RestrictionType_Error, // 严重警告
+    RestrictionType_InvalidData // 非法数据
 };
+
 // 南美白对虾的一般警告范围
 extern DataRestrictionPointer penaeusVannameiNormalData;
 // 南美白对虾的严重警告范围
