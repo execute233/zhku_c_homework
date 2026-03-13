@@ -8,10 +8,11 @@
 #include <string.h>
 const char* IO_LINE_WRITE_FMT = "%d, %.2f, %.2f, %.2f, %.2f, %s";
 const char* IO_LINE_READ_FMT = "%d, %f, %f, %f, %f, %s %s";
+const char* RECORD_FILE_NAME = "fish_farm_data.txt";
 
 // 写入到文件，如果文件存在则会清空内容写入
-void writeWaterQualityRecords(ArrayList list, char* file) {
-    FILE* f = fopen(file, "w");
+void writeWaterQualityRecords(ArrayList list) {
+    FILE* f = fopen(RECORD_FILE_NAME, "w");
     for (int i = 0; i < list->size; i++) {
         struct WaterQuality * quality = getAList(list, i);
         fprintf(f, IO_LINE_WRITE_FMT, quality->id, quality->tmp, quality->doxygen, quality->ph, quality->ammonia, quality->time);
@@ -21,8 +22,8 @@ void writeWaterQualityRecords(ArrayList list, char* file) {
     fclose(f);
 }
 // 读取文件，构建为ArrayList
-ArrayList readWaterQualityRecords(char* file) {
-    FILE* f = fopen(file, "r");
+ArrayList readWaterQualityRecords() {
+    FILE* f = fopen(RECORD_FILE_NAME, "r");
     ArrayList list = createAListDefault();
     while (true) {
         struct WaterQuality * quality = malloc(sizeof(struct WaterQuality));

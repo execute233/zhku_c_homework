@@ -4,6 +4,7 @@
 #include <conio.h>
 #include <windows.h>
 
+#include "data.h"
 #include "data_restriction.h"
 #include "io.h"
 #define CLEAR_SCREEN "\033[2J"
@@ -24,16 +25,9 @@ enum Mode mode = PENAEUS_VANNAMEI;
 struct ArrayList * globalRecordList = NULL;
 // 操作的按键
 enum KeyType {
-    UP,
-    DOWN,
-    LEFT,
-    RIGHT,
-    ENTER,
-    BACKSPACE,
-    DEL,
-    SPACE,
-    ESC,
-    UNKOWN
+    NUM0, NUM1, NUM2, NUM3, NUM4, NUM5, NUM6, NUM7, NUM8, NUM9, DOT
+    , UP, DOWN, LEFT, RIGHT, ENTER, BACKSPACE, DEL, SPACE, ESC
+    , UNKOWN
 };
 // 针对windows终端的控制
 void initTerminal() {
@@ -43,6 +37,11 @@ void initTerminal() {
         dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
         SetConsoleMode(hOut, dwMode);
     }
+
+    CONSOLE_CURSOR_INFO cursorInfo;
+    cursorInfo.dwSize = 100;
+    SetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &cursorInfo);
+
     printf(HIDE_CURSOR);
 }
 int kbhit() {
@@ -70,6 +69,29 @@ enum KeyType waitForKey() {
             }
         }
         switch (part1) {
+            case '0':
+                return NUM0;
+            case '1':
+                return NUM1;
+            case '2':
+                return NUM2;
+            case '3':
+                return NUM3;
+            case '4':
+                return NUM4;
+            case '5':
+                return NUM5;
+            case '6':
+                return NUM6;
+            case '7':
+                return NUM7;
+            case '8':
+                return NUM8;
+            case '9':
+                return NUM9;
+            case '.':
+            case 161:
+                return DOT;
             case 27:
                 return ESC;
             case 13:
@@ -149,7 +171,8 @@ void printfWhileBkgBoolAutoEnter(bool condition, char* format, ...) {
     va_end(args);
 }
 const char* INFO = "id\t水温（度）\t溶解氧(mg/L)\tPH\t氨氮(mg/L)\t时间";
-const char* END_TIPS = "按上下左右以切换方向，ESC/backspce 以退出";
+const char* WATCH_END_TIPS = "%d / %d Pages  使用方向键以切换页码，ESC/backspce 以退出";
+const char* EDIT_END_TIPS = "%d / %d Pages  使用方向键以切换页码，ESC/backspce 以退出，按下Enter键进入编辑，再次按下Enter键以保存，ESC/Backspace键不保存";
 const char* PRINT_WATER_QUALITY_FMT = "%d\t%.2f\t\t%.2f\t\t%.2f\t%.2f\t\t%s";
 void printWaterQualityAutoEnter(struct WaterQuality * quality) {
     enum RestrictionType restriction;
@@ -225,7 +248,7 @@ void seeHistoryRecord() {
         for (int i = startIndex; i <= endIndex; i++) {
             printWaterQualityAutoEnter(getAList(globalRecordList, i));
         }
-        printf(END_TIPS);
+        printf(WATCH_END_TIPS, page + 1, maxPage + 1);
         enum KeyType key = waitForAnyKey(6, UP, DOWN, LEFT, RIGHT, ESC, BACKSPACE);
 
         clearScreen();
@@ -250,6 +273,184 @@ void seeHistoryRecord() {
         }
     }
 }
+void gotoxy(int x, int y) {
+    COORD pos;
+    pos.X = x;
+    pos.Y = y;
+    SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), pos);
+}
+// 截取ArrayList的某个范围里的水质数据添加到新的ArrayList字符串里
+// 替换找到的第i个指定字符后面的第j个字符为新的字符
+void replaceTargetCharOnNOChar(char* str, char target, int i, int j, char newChar) {
+    for (int k = 0; str[k] != '\0'; k++) {
+        if (str[k] == target) {
+            i--;
+        }
+        if (i == 0) {
+            str[k + j] = newChar;
+            return;
+        }
+    }
+}
+void doReplace(char* str, int cursorX , char target) {
+    const int startIndex1 = 0, startIndex2 = 16, startIndex3 = 32, startIndex4 = 40, startIndex5 = 56, startIndex6 = 67;
+    const int endIndex1 = startIndex1 + 4, endIndex2 = startIndex2 + 4, endIndex3 = startIndex3 + 4, endIndex4 = startIndex4 + 3, endIndex5 = startIndex5 + 9, endIndex6 = startIndex6 + 9;
+    if (cursorX >= startIndex1 && cursorX <= endIndex1) {
+        replaceTargetCharOnNOChar(str, '\t', 1, cursorX - startIndex1 + 1, target);
+    }
+    if (cursorX >= startIndex2 && cursorX <= endIndex2) {
+        replaceTargetCharOnNOChar(str, '\t', 3, cursorX - startIndex2 + 1, target);
+    }
+    if (cursorX >= startIndex3 && cursorX <= endIndex3) {
+        replaceTargetCharOnNOChar(str, '\t', 5, cursorX - startIndex3 + 1, target);
+    }
+    if (cursorX >= startIndex4 && cursorX <= endIndex4) {
+        replaceTargetCharOnNOChar(str, '\t', 6, cursorX - startIndex4 + 1, target);
+    }
+    if (cursorX >= startIndex5 && cursorX <= endIndex6) {
+        replaceTargetCharOnNOChar(str, '\t', 8, cursorX - startIndex5 + 1, target);
+    }
+}
+// 左右光标快速跳转，把一些没用的空行直接跳了
+int quickJump(int cursorX, bool jumpLeft) {
+    const int startIndex1 = 0, startIndex2 = 16, startIndex3 = 32, startIndex4 = 40, startIndex5 = 56, startIndex6 = 67;
+    const int endIndex1 = startIndex1 + 4, endIndex2 = startIndex2 + 4, endIndex3 = startIndex3 + 4, endIndex4 = startIndex4 + 3, endIndex5 = startIndex5 + 9, endIndex6 = startIndex6 + 9;
+    if (jumpLeft) {
+        if (startIndex1 == cursorX) return endIndex6;
+        if (startIndex2 == cursorX) return endIndex1;
+        if (startIndex3 == cursorX) return endIndex2;
+        if (startIndex4 == cursorX) return endIndex3;
+        if (startIndex5 == cursorX) return endIndex4;
+        if (startIndex6 == cursorX) return endIndex5;
+        return cursorX - 1;
+    }
+    if (endIndex1 == cursorX) return startIndex2;
+    if (endIndex2 == cursorX) return startIndex3;
+    if (endIndex3 == cursorX) return startIndex4;
+    if (endIndex4 == cursorX) return startIndex5;
+    if (endIndex5 == cursorX) return startIndex6;
+    if (endIndex6 == cursorX) return startIndex1;
+    return cursorX + 1;
+
+}
+ArrayList cpyAList(ArrayList list, int startIndex, int len) {
+    ArrayList result = createAList(len);
+    for (int i = startIndex; i < startIndex + len; i++) {
+        char* str = malloc(sizeof(char) * 128);
+        struct WaterQuality * quality = getAList(list, i);
+        sprintf(str, PRINT_WATER_QUALITY_FMT, quality->id, quality->tmp, quality->doxygen, quality->ph, quality->ammonia, quality->time);
+        addAList(result, str);
+    }
+    return result;
+}
+// 修改历史数据
+void editHistoryRecord() {
+    const int showRowsCount = getVisibleRows() - 2;
+    int page = 0;
+    int maxPage = globalRecordList->size % showRowsCount == 0 ? globalRecordList->size / showRowsCount : globalRecordList->size / showRowsCount + 1;
+    int currentCursorX = 0, currentCursorY = 0;
+    int cursorMinX = 0, cursorMaxX = 74, cursorMinY = 0, cursorMaxY = showRowsCount - 1;
+    const int posStartX = 8, posStartY = 1;
+    // 一些数值定义的相对位置范围[]
+    bool edit = false;
+    // 缓存当前页的数据用于修改
+    ArrayList bufList = createAList(showRowsCount);
+    while (true) {
+        if (edit) {
+            printf(SHOW_CURSOR);
+        } else {
+            printf(HIDE_CURSOR);
+        }
+        printDefaultAutoEnter(INFO);
+        int startIndex = page * showRowsCount;
+        int endIndex = startIndex + showRowsCount - 1;
+        if (endIndex >= globalRecordList->size) {
+            endIndex = globalRecordList->size - 1;
+        }
+        // 输出水质数据
+        if (!edit) {
+            for (int i = startIndex; i <= endIndex; i++) {
+                printWaterQualityAutoEnter(getAList(globalRecordList, i));
+            }
+        } else {
+            for (int i = 0; i < bufList->size; i++) {
+                printDefaultAutoEnter(getAList(bufList, i));
+            }
+        }
+
+        printf(EDIT_END_TIPS, page + 1, maxPage + 1);
+        // 光标要在输出完成后移动
+        gotoxy(posStartX + currentCursorX, posStartY + currentCursorY);
+        enum KeyType key = waitForAnyKey(18, UP, DOWN, LEFT, RIGHT, ESC, BACKSPACE, ENTER
+            , NUM0, NUM1, NUM2, NUM3, NUM4, NUM5, NUM6, NUM7, NUM8, NUM9, DOT);
+
+
+        switch (key) {
+            case BACKSPACE:
+            case ESC:
+                if (edit) {
+                    edit = false;
+                } else {
+                    return;
+                }
+            case ENTER:
+                if (edit) {
+                    edit = false;
+                } else {
+                    clearAListRls(bufList);
+                    // 将当前页的数据缓存起来
+                    bufList = cpyAList(globalRecordList, startIndex, showRowsCount);
+                    edit = true;
+                }
+            case UP:
+                if (edit) {
+                    currentCursorY = currentCursorY == cursorMinY ? cursorMinY : currentCursorY - 1;
+                }
+                break;
+            case DOWN:
+                if (edit) {
+                    currentCursorY = currentCursorY == cursorMaxY ? cursorMaxY : currentCursorY + 1;
+                }
+                break;
+            case LEFT:
+                if (edit) {
+                    currentCursorX = currentCursorX == cursorMinX ? cursorMinX : quickJump(currentCursorX, true);
+                } else {
+                    page = page == 0 ? 0 : page - 1;
+                }
+                break;
+            case RIGHT:
+                if (edit) {
+                    currentCursorX = currentCursorX == cursorMaxX ? cursorMaxX : quickJump(currentCursorX, false);
+                } else {
+                    page = page == maxPage ? maxPage : page + 1;
+                }
+                break;
+            case NUM0:
+            case NUM1:
+            case NUM2:
+            case NUM3:
+            case NUM4:
+            case NUM5:
+            case NUM6:
+            case NUM7:
+            case NUM8:
+            case NUM9:
+            case DOT:
+                if (edit) {
+                    char* str = getAList(bufList, currentCursorY);
+                    if (key == DOT) {
+                        doReplace(str, currentCursorX, '.');
+                        break;
+                    }
+                    doReplace(str, currentCursorX, '0' + key);
+                }
+                break;
+            default: ;
+        }
+        clearScreen();
+    }
+}
 // 开始监测逻辑
 void watchInit() {
     printDefaultAutoEnter("开始监测...");
@@ -261,7 +462,6 @@ void watchInit() {
     getKey();
 }
 void userLoopInit() {
-    globalRecordList = createAListDefault();
     int choose = 1;
     while (true) {
         printfWhileBkgBoolAutoEnter(choose == 1, "开始监测");
@@ -287,14 +487,15 @@ void userLoopInit() {
                         seeHistoryRecord();
                         break;
                 case 3:
-
+                        editHistoryRecord();
                         break;
                 case 4:
 
                         break;
                 case 5:
+                        writeWaterQualityRecords(globalRecordList);
                         printDefaultAutoEnter("ByeBye!");
-                        break;
+                        return;
                 default:
                         continue;
                 }
@@ -305,8 +506,11 @@ void userLoopInit() {
     }
 }
 void initConsole() {
+    globalRecordList = readWaterQualityRecords();
     initTerminal();
     chooseModeInit();
+
     userLoopInit();
+    editHistoryRecord();
     printf(SHOW_CURSOR);
 }

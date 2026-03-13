@@ -7,7 +7,7 @@
 #include "proj/console.h"
 #include "lib/array_list.h"
 #include "proj/io.h"
-const char* RECORD_FILE_NAME = "fish_farm_data.txt";
+
 const char* RESTRICTION_FILE_NAME = "data_restriction.txt";
 void forEachPrintWaterQuality(void* e) {
     struct WaterQuality * quality = (struct WaterQuality *) e;
@@ -59,14 +59,13 @@ void writeTest() {
     addAList(list, q3);
     addAList(list, q4);
     addAList(list, q5);
-    writeWaterQualityRecords(list, RECORD_FILE_NAME);
+    writeWaterQualityRecords(list);
 }
 void readTest() {
-    ArrayList list = readWaterQualityRecords(RECORD_FILE_NAME);
+    ArrayList list = readWaterQualityRecords();
     forEachAList(list, forEachPrintWaterQuality);
 }
 int main() {
     initDataRestriction(RESTRICTION_FILE_NAME);
-
     initConsole();
 }

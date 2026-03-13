@@ -1,6 +1,8 @@
 #include "array_list.h"
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
+
 ArrayList createAListDefault() {
     return createAList(10);
 }
@@ -11,11 +13,18 @@ ArrayList createAList(int capacity) {
     list->array = malloc(sizeof(void*) * capacity);
     return list;
 }
+/**
+* 缩容没实现
+* 检查ArrayList是否需要扩容，如果需要就扩容
+* 能跑就别乱动，乱搞内存会炸Boom！！！
+**/
 static void checkSizeOrResize(ArrayList alist) {
     if (alist->size >= alist->capacity) {
-        int newCapacity = (alist->capacity << 1) - alist->capacity;
-        void** newArr = realloc(alist->array, sizeof(void*) * newCapacity);
+        int newCapacity = (alist->capacity >> 1) + alist->capacity;
+        // 为什么不用realloc？你会你可以用
+        void** newArr = malloc( sizeof(void*) * newCapacity);
         if (newArr != alist->array) {
+            memcpy(newArr, alist->array, sizeof(void*) * alist->size);
             free(alist->array);
             alist->array = newArr;
         }
