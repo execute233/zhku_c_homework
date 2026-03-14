@@ -3,6 +3,7 @@
 #include <stdarg.h>
 #include <conio.h>
 #include <windows.h>
+#include <time.h>
 
 #include "data.h"
 #include "data_restriction.h"
@@ -170,10 +171,15 @@ void printfWhileBkgBoolAutoEnter(bool condition, char* format, ...) {
     }
     va_end(args);
 }
-const char* INFO = "id\t水温（度）\t溶解氧(mg/L)\tPH\t氨氮(mg/L)\t时间";
-const char* WATCH_END_TIPS = "%d / %d Pages  使用方向键以切换页码，ESC/backspce 以退出";
-const char* EDIT_END_TIPS = "%d / %d Pages  使用方向键以切换页码，ESC/backspce 以退出，按下Enter键进入编辑，再次按下Enter键以保存，ESC/Backspace键不保存";
-const char* PRINT_WATER_QUALITY_FMT = "%d\t%.2f\t\t%.2f\t\t%.2f\t%.2f\t\t%s";
+static const char* INFO = "id\t水温（度）\t溶解氧(mg/L)\tPH\t氨氮(mg/L)\t时间";
+static const char* WATCH_END_TIPS = "%d / %d Pages  使用方向键以切换页码，ESC/backspce 以退出";
+static const char* EDIT_END_TIPS = "%d / %d Pages  使用方向键以切换页码，ESC/backspce 以退出\n按下Enter键进入编辑，再次按下Enter键以保存，ESC/Backspace键不保存";
+static const char* PRINT_WATER_QUALITY_FMT = "%d\t%.2f\t\t%.2f\t\t%.2f\t%.2f\t\t%s";
+static const char* STR_TO_WQ_FMT = "%d\t%f\t\t%f\t\t%f\t%f\t\t%s%s";
+static const int START_INDEX_1 = 0, START_INDEX_2 = 16, START_INDEX_3 = 32, START_INDEX_4 = 40, START_INDEX_5 = 56, START_INDEX_6 = 67;
+static const int END_INDEX_1 = START_INDEX_1 + 4, END_INDEX_2 = START_INDEX_2 + 4, END_INDEX_3 = START_INDEX_3 + 4, END_INDEX_4 = START_INDEX_4 + 3, END_INDEX_5 = START_INDEX_5 + 9, END_INDEX_6 = START_INDEX_6 + 9;
+static const char* STR_TO_TIME_FMT = "%d-%d-%d %d:%d:%d";
+static const char printTmp[128 * 64];
 void printWaterQualityAutoEnter(struct WaterQuality * quality) {
     enum RestrictionType restriction;
     if (mode == PENAEUS_VANNAMEI) {
@@ -293,43 +299,39 @@ void replaceTargetCharOnNOChar(char* str, char target, int i, int j, char newCha
     }
 }
 void doReplace(char* str, int cursorX , char target) {
-    const int startIndex1 = 0, startIndex2 = 16, startIndex3 = 32, startIndex4 = 40, startIndex5 = 56, startIndex6 = 67;
-    const int endIndex1 = startIndex1 + 4, endIndex2 = startIndex2 + 4, endIndex3 = startIndex3 + 4, endIndex4 = startIndex4 + 3, endIndex5 = startIndex5 + 9, endIndex6 = startIndex6 + 9;
-    if (cursorX >= startIndex1 && cursorX <= endIndex1) {
-        replaceTargetCharOnNOChar(str, '\t', 1, cursorX - startIndex1 + 1, target);
+    if (cursorX >= START_INDEX_1 && cursorX <= END_INDEX_1) {
+        replaceTargetCharOnNOChar(str, '\t', 1, cursorX - START_INDEX_1 + 1, target);
     }
-    if (cursorX >= startIndex2 && cursorX <= endIndex2) {
-        replaceTargetCharOnNOChar(str, '\t', 3, cursorX - startIndex2 + 1, target);
+    if (cursorX >= START_INDEX_2 && cursorX <= END_INDEX_2) {
+        replaceTargetCharOnNOChar(str, '\t', 3, cursorX - START_INDEX_2 + 1, target);
     }
-    if (cursorX >= startIndex3 && cursorX <= endIndex3) {
-        replaceTargetCharOnNOChar(str, '\t', 5, cursorX - startIndex3 + 1, target);
+    if (cursorX >= START_INDEX_3 && cursorX <= END_INDEX_3) {
+        replaceTargetCharOnNOChar(str, '\t', 5, cursorX - START_INDEX_3 + 1, target);
     }
-    if (cursorX >= startIndex4 && cursorX <= endIndex4) {
-        replaceTargetCharOnNOChar(str, '\t', 6, cursorX - startIndex4 + 1, target);
+    if (cursorX >= START_INDEX_4 && cursorX <= END_INDEX_4) {
+        replaceTargetCharOnNOChar(str, '\t', 6, cursorX - START_INDEX_4 + 1, target);
     }
-    if (cursorX >= startIndex5 && cursorX <= endIndex6) {
-        replaceTargetCharOnNOChar(str, '\t', 8, cursorX - startIndex5 + 1, target);
+    if (cursorX >= START_INDEX_5 && cursorX <= END_INDEX_6) {
+        replaceTargetCharOnNOChar(str, '\t', 8, cursorX - START_INDEX_5 + 1, target);
     }
 }
 // 左右光标快速跳转，把一些没用的空行直接跳了
 int quickJump(int cursorX, bool jumpLeft) {
-    const int startIndex1 = 0, startIndex2 = 16, startIndex3 = 32, startIndex4 = 40, startIndex5 = 56, startIndex6 = 67;
-    const int endIndex1 = startIndex1 + 4, endIndex2 = startIndex2 + 4, endIndex3 = startIndex3 + 4, endIndex4 = startIndex4 + 3, endIndex5 = startIndex5 + 9, endIndex6 = startIndex6 + 9;
     if (jumpLeft) {
-        if (startIndex1 == cursorX) return endIndex6;
-        if (startIndex2 == cursorX) return endIndex1;
-        if (startIndex3 == cursorX) return endIndex2;
-        if (startIndex4 == cursorX) return endIndex3;
-        if (startIndex5 == cursorX) return endIndex4;
-        if (startIndex6 == cursorX) return endIndex5;
+        if (START_INDEX_1 == cursorX) return END_INDEX_6;
+        if (START_INDEX_2 == cursorX) return END_INDEX_1;
+        if (START_INDEX_3 == cursorX) return END_INDEX_2;
+        if (START_INDEX_4 == cursorX) return END_INDEX_3;
+        if (START_INDEX_5 == cursorX) return END_INDEX_4;
+        if (START_INDEX_6 == cursorX) return END_INDEX_5;
         return cursorX - 1;
     }
-    if (endIndex1 == cursorX) return startIndex2;
-    if (endIndex2 == cursorX) return startIndex3;
-    if (endIndex3 == cursorX) return startIndex4;
-    if (endIndex4 == cursorX) return startIndex5;
-    if (endIndex5 == cursorX) return startIndex6;
-    if (endIndex6 == cursorX) return startIndex1;
+    if (END_INDEX_1 == cursorX) return START_INDEX_2;
+    if (END_INDEX_2 == cursorX) return START_INDEX_3;
+    if (END_INDEX_3 == cursorX) return START_INDEX_4;
+    if (END_INDEX_4 == cursorX) return START_INDEX_5;
+    if (END_INDEX_5 == cursorX) return START_INDEX_6;
+    if (END_INDEX_6 == cursorX) return START_INDEX_1;
     return cursorX + 1;
 
 }
@@ -343,9 +345,75 @@ ArrayList cpyAList(ArrayList list, int startIndex, int len) {
     }
     return result;
 }
+// 确认编辑的信息，并检查
+bool confirmEdit(ArrayList list, int index) {
+    ArrayList qualityList = createAList(list->size);
+    for (int i = 0; i < list->size; i++) {
+        char* str = getAList(list, i);
+        struct WaterQuality* quality = malloc(sizeof(struct WaterQuality));
+        char rightTime[10];
+        int scanCount = sscanf(str, STR_TO_WQ_FMT, &quality->id, &quality->tmp, &quality->doxygen, &quality->ph, &quality->ammonia, quality->time, rightTime);
+        if (scanCount != 7) {
+            free(quality);
+            destroyAListRls(qualityList);
+            return false;
+        }
+        if (mode == CRASSOSTRA_GIGAS) {
+            if (checkCrassostreaGigasData(quality) == INVALID_DATA) {
+                free(quality);
+                destroyAListRls(qualityList);
+                return false;
+            }
+        }
+        if (mode == MICROPTERUS_SALMOIDES) {
+            if (checkMicropterusSalmoidesData(quality) == INVALID_DATA) {
+                free(quality);
+                destroyAListRls(qualityList);
+                return false;
+            }
+        }
+        if (mode == PENAEUS_VANNAMEI) {
+            if (checkPenaeusVannameiData(quality) == INVALID_DATA) {
+                free(quality);
+                destroyAListRls(qualityList);
+                return false;
+            }
+        }
+        strcat(quality->time, " ");
+        strcat(quality->time, rightTime);
+
+        // 时间验证
+        time_t now = time(NULL);
+        struct tm tm = {0};
+        int year, month, day, hour, min, sec;
+        // 假设格式固定为 "YYYY-MM-DD HH:MM:SS"
+        // 如果格式不同，请修改 sscanf 的格式串
+        if (sscanf(quality->time, STR_TO_TIME_FMT, &tm.tm_year, &tm.tm_mon, &tm.tm_mday, &tm.tm_hour, &tm.tm_min, &tm.tm_sec) != 6) {
+            free(quality);
+            destroyAListRls(qualityList);
+            return false;
+        }
+        tm.tm_year -= 1900; // 年份从 1900 开始计数
+        tm.tm_mon -= 1; // 月份从 0 (一月) 到 11 (十二月)
+        tm.tm_isdst = -1; // 让系统自动判断是否夏令时
+        time_t t = mktime(&tm);
+        if (t == -1 || t > now) {
+            free(quality);
+            destroyAListRls(qualityList);
+            return false;
+        }
+
+        addAList(qualityList, quality);
+    }
+    for (int i = 0; i < qualityList->size; i++) {
+        replaceAListRls(globalRecordList, i + index, getAList(qualityList, i));
+    }
+    destroyAList(qualityList);
+    return true;
+}
 // 修改历史数据
 void editHistoryRecord() {
-    const int showRowsCount = getVisibleRows() - 2;
+    const int showRowsCount = getVisibleRows() - 3;
     int page = 0;
     int maxPage = globalRecordList->size % showRowsCount == 0 ? globalRecordList->size / showRowsCount : globalRecordList->size / showRowsCount + 1;
     int currentCursorX = 0, currentCursorY = 0;
@@ -393,8 +461,17 @@ void editHistoryRecord() {
                 } else {
                     return;
                 }
+                break;
             case ENTER:
                 if (edit) {
+                    bool confirm_edit = confirmEdit(bufList, startIndex);
+                    clearScreen();
+                    if (confirm_edit) {
+                        printDefaultAutoEnter("编辑成功！");
+                    } else {
+                        printDefaultAutoEnter("输入的数据有误!");
+                    }
+                    Sleep(3000);
                     edit = false;
                 } else {
                     clearAListRls(bufList);
@@ -402,6 +479,7 @@ void editHistoryRecord() {
                     bufList = cpyAList(globalRecordList, startIndex, showRowsCount);
                     edit = true;
                 }
+                break;
             case UP:
                 if (edit) {
                     currentCursorY = currentCursorY == cursorMinY ? cursorMinY : currentCursorY - 1;

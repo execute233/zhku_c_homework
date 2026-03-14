@@ -72,6 +72,7 @@ bool replaceAListRls(ArrayList alist, int index, void * newElement) {
         return false;
     }
     free(oldPtr);
+    *(alist->array + index) = newElement;
     return true;
 }
 int findAListByPtr(ArrayList alist, void * element) {
@@ -95,29 +96,34 @@ int findAListByCmp(ArrayList alist, _Bool compare(void*, void*), void * element)
     return index;
 }
 void* getAList(ArrayList alist, int index) {
-    if (index < 0 || index >= alist->size) return NULL;
+    if (alist == NULL || index < 0 || index >= alist->size) return NULL;
     return *(alist->array + index);
 }
 void clearAList(ArrayList alist) {
+    if (alist == NULL) return;
     alist->size = 0;
 }
 void clearAListRls(ArrayList alist) {
+    if (alist == NULL) return;
     for (int i = 0; i < alist->size; i++) {
         free(*(alist->array + i));
     }
     alist->size = 0;
 }
 void destroyAList(ArrayList alist) {
+    if (alist == NULL) return;
     free(alist->array);
     free(alist);
 }
 void destroyAListRls(ArrayList alist) {
+    if (alist == NULL) return;
     for (int i = 0; i < alist->size; i++) {
         free(*(alist->array + i));
     }
     destroyAList(alist);
 }
 void forEachAList(ArrayList alist, void forEach(void * element)) {
+    if (alist == NULL) return;
     for (int i = 0; i < alist->size; i++) {
         forEach(*(alist->array + i));
     }
