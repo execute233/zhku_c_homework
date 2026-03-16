@@ -42,7 +42,7 @@ void initDataRestriction(char* file) {
     FILE* f = fopen(file, "r");
 
     char name[50], type[20], buf[256], line[256];
-    float values[8];
+    double values[8];
     DataRestriction target = NULL;
     while (fgets(buf, sizeof(buf), f) != NULL) {
         // 移除行尾的换行符
@@ -55,7 +55,7 @@ void initDataRestriction(char* file) {
         if (buf[0] == '\0' || (buf[0] == '/' && buf[1] == '/')) {
             continue;
         }
-        if (sscanf(buf, "%[^,], %[^,], %f, %f, %f, %f, %f, %f, %f, %f",
+        if (sscanf(buf, "%[^,], %[^,], %lf, %lf, %lf, %lf, %lf, %lf, %lf, %lf",
                    name, type, &values[0], &values[1], &values[2], &values[3],
                    &values[4], &values[5], &values[6], &values[7]) == 10) {
             // 确定目标结构体

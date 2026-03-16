@@ -11,14 +11,14 @@
 // 当数据超出了其校验范围时，该数据应当丢弃，因为数据不合法
 typedef struct DataRestriction {
     // TODO: 改double
-    float minTmp;
-    float maxTmp;
-    float minDoxygen;
-    float maxDoxygen;
-    float minPh;
-    float maxPh;
-    float minAmmonia;
-    float maxAmmonia;
+    double minTmp;
+    double maxTmp;
+    double minDoxygen;
+    double maxDoxygen;
+    double minPh;
+    double maxPh;
+    double minAmmonia;
+    double maxAmmonia;
 } * DataRestriction;
 // 用于指示数据的警告范围、或者数据是否合法
 enum RestrictionType {

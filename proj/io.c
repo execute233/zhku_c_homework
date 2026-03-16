@@ -7,7 +7,7 @@
 #include "../proj/data.h"
 #include <string.h>
 const char* IO_LINE_WRITE_FMT = "%d, %.2f, %.2f, %.2f, %.2f, %s";
-const char* IO_LINE_READ_FMT = "%d, %f, %f, %f, %f, %s %s";
+const char* IO_LINE_READ_FMT = "%d, %lf, %lf, %lf, %lf, %s %s";
 const char* RECORD_FILE_NAME = "fish_farm_data.txt";
 
 // 写入到文件，如果文件存在则会清空内容写入

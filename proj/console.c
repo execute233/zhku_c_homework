@@ -175,8 +175,8 @@ static const char* INFO = "id\t水温（度）\t溶解氧(mg/L)\tPH\t氨氮(mg/L)\t时间";
 static const char* WATCH_END_TIPS = "%d / %d Pages  使用方向键以切换页码，ESC/backspce 以退出";
 static const char* EDIT_END_TIPS = "%d / %d Pages  使用方向键以切换页码，ESC/backspce 以退出\n按下Enter键进入编辑，再次按下Enter键以保存，ESC/Backspace键不保存";
 static const char* DEL_END_TIPS = "%d / %d Pages  使用方向键以切换页码，ESC/backspce 以退出，Del键以删除选择的行";
-static const char* PRINT_WATER_QUALITY_FMT = "%d\t%.2f\t\t%.2f\t\t%.2f\t%.2f\t\t%s";
-static const char* STR_TO_WQ_FMT = "%d\t%f\t\t%f\t\t%f\t%f\t\t%s%s";
+static const char* PRINT_WATER_QUALITY_FMT = "%d\t%.2lf\t\t%.2lf\t\t%.2lf\t%.2lf\t\t%s";
+static const char* STR_TO_WQ_FMT = "%d\t%lf\t\t%lf\t\t%lf\t%lf\t\t%s%s";
 static const int START_INDEX_1 = 0, START_INDEX_2 = 16, START_INDEX_3 = 32, START_INDEX_4 = 40, START_INDEX_5 = 56, START_INDEX_6 = 67;
 static const int END_INDEX_1 = START_INDEX_1 + 4, END_INDEX_2 = START_INDEX_2 + 4, END_INDEX_3 = START_INDEX_3 + 4, END_INDEX_4 = START_INDEX_4 + 3, END_INDEX_5 = START_INDEX_5 + 9, END_INDEX_6 = START_INDEX_6 + 9;
 static const char* STR_TO_TIME_FMT = "%d-%d-%d %d:%d:%d";
@@ -457,6 +457,7 @@ void editHistoryRecord() {
         if (endIndex >= globalRecordList->size) {
             endIndex = globalRecordList->size - 1;
         }
+        cursorMaxY = endIndex - startIndex;
         // 输出水质数据
         if (!edit) {
             for (int i = startIndex; i <= endIndex; i++) {
@@ -498,7 +499,7 @@ void editHistoryRecord() {
                 } else {
                     clearAListRls(bufList);
                     // 将当前页的数据缓存起来
-                    bufList = cpyAList(globalRecordList, startIndex, showRowsCount);
+                    bufList = cpyAList(globalRecordList, startIndex, endIndex - startIndex + 1);
                     edit = true;
                 }
                 break;
@@ -557,7 +558,7 @@ void delHistoryRecord() {
     int page = 0, chooseRowIndex = 0, maxChoosRowIndex = showRowsCount - 1;
     int maxPage = globalRecordList->size % showRowsCount == 0 ? globalRecordList->size / showRowsCount - 1 : globalRecordList->size / showRowsCount;
     while (true) {
-        printDefaultAutoEnter(INFO);
+        printDefaultAutoEnter(DEL_END_TIPS);
 
         int startIndex = page * showRowsCount;
         int endIndex = startIndex + showRowsCount - 1;
