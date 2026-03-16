@@ -135,9 +135,7 @@ enum KeyType waitForAnyKey(int count, ...) {
         }
     }
 }
-void clearScreen() {
-    printf(CLEAR_FULL);
-}
+
 int getVisibleRows() {
     CONSOLE_SCREEN_BUFFER_INFO csbi;
     if (GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi)) {
@@ -186,8 +184,16 @@ static const char* PRINT_WATER_QUALITY_FMT = "%d\t%.2lf\t\t%.2lf\t\t%.2lf\t%.2lf
 static const char* STR_TO_WQ_FMT = "%d\t%lf\t\t%lf\t\t%lf\t%lf\t\t%s%s";
 static const int START_INDEX_1 = 0, START_INDEX_2 = 16, START_INDEX_3 = 32, START_INDEX_4 = 40, START_INDEX_5 = 56, START_INDEX_6 = 67;
 static const int END_INDEX_1 = START_INDEX_1 + 4, END_INDEX_2 = START_INDEX_2 + 4, END_INDEX_3 = START_INDEX_3 + 4, END_INDEX_4 = START_INDEX_4 + 3, END_INDEX_5 = START_INDEX_5 + 9, END_INDEX_6 = START_INDEX_6 + 9;
-static const char* STR_TO_TIME_FMT = "%d-%d-%d %d:%d:%d";
-static const char printTmp[128 * 64];
+static const char* STR_TO_TIME_FMT ="%d-%d-%d %d:%d:%d";
+
+static char printTmp[128 * 64];
+void clearScreen() {
+    printTmp[0] = '\0';
+    printf(CLEAR_FULL);
+}
+// 下面方法要输出到缓存里，需要调用screenFlush()来显示
+
+// 下面方法直接输出，不输出到输出缓存里
 void printWaterQualityAutoEnter(struct WaterQuality * quality) {
     enum RestrictionType restriction;
     if (mode == PENAEUS_VANNAMEI) {
@@ -565,7 +571,7 @@ void delHistoryRecord() {
     int page = 0, chooseRowIndex = 0, maxChoosRowIndex = showRowsCount - 1;
     int maxPage = globalRecordList->size % showRowsCount == 0 ? globalRecordList->size / showRowsCount - 1 : globalRecordList->size / showRowsCount;
     while (true) {
-        printDefaultAutoEnter(DEL_END_TIPS);
+        printDefaultAutoEnter(INFO);
 
         int startIndex = page * showRowsCount;
         int endIndex = startIndex + showRowsCount - 1;
@@ -581,7 +587,7 @@ void delHistoryRecord() {
                 printWaterQualityAutoEnter(getAList(globalRecordList, i));
             }
         }
-        printf(WATCH_END_TIPS, page + 1, maxPage + 1);
+        printf(DEL_END_TIPS, page + 1, maxPage + 1);
         enum KeyType key = waitForAnyKey(7, UP, DOWN, LEFT, RIGHT, ESC, BACKSPACE, DEL);
 
         clearScreen();
