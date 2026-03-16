@@ -20,6 +20,7 @@ set(PROJ_SOURCES
     proj/data.c
     proj/io.c
     proj/console.c
+   proj/sort.c
 )
 
 add_executable(fuck_zhku_homework 

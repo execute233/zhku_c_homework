@@ -138,13 +138,13 @@ void forEachAList(ArrayList alist, void forEach(void * element)) {
         forEach(*(alist->array + i));
     }
 }
-void sort(ArrayList alist, _Bool flag, int compare(void*, void*)) {
+void sort(ArrayList alist, _Bool esc, int compare(void*, void*)) {
     if (alist == NULL || alist->size <= 1 || compare == NULL) return;
     // 使用冒泡排序
     for (int i = 0; i < alist->size - 1; i++) {
         _Bool isSorted = false;
         for (int j = i + 1; j < alist->size; j++) {
-            if (flag ? compare(alist->array[i], alist->array[j]) > 0 : compare(alist->array[i], alist->array[j]) < 0) {
+            if (esc ? compare(alist->array[i], alist->array[j]) > 0 : compare(alist->array[i], alist->array[j]) < 0) {
                 void* tmp = alist->array[i];
                 alist->array[i] = alist->array[j];
                 alist->array[j] = tmp;

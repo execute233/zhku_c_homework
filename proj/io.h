@@ -6,6 +6,8 @@
 void writeWaterQualityRecords(ArrayList list);
 // 读取文件，构建为ArrayList
 ArrayList readWaterQualityRecords();
-
+// 读取限制的数据
+void readRestrictionData();
+// 随机生成数据
 struct ArrayList * generateAndSaveRandomWaterQualityData(int count, enum Mode mode);
 #endif

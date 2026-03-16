@@ -50,8 +50,6 @@ extern DataRestriction crassostreaGigasNormalData;
 extern DataRestriction crassostreaGigasSeriousData;
 // 南奥牡蛎的数据校验范围
 extern DataRestriction crassostreaGigasValidData;
-// 方法，用于初始化这些校验数据
-void initDataRestriction(char* file);
 // 用于校验南美白对虾的数据
 enum RestrictionType checkPenaeusVannameiData(struct WaterQuality * data);
 // 用于校验大口黑鲈的数据

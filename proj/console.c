@@ -8,12 +8,16 @@
 #include "data.h"
 #include "data_restriction.h"
 #include "io.h"
+#include "sort.h"
+#define TAB          "\t"
+#define DOUBLE_TAB   "\t\t"
+#define DOUBLE_FMT   "%lf"
+#define DOUBLE_FMT2  "%.2lf"
 #define CLEAR_SCREEN "\033[2J"
 #define MOVE_CURSOR(y, x) "\033[" #y ";" #x "H"
-#define COLOR_RED  "\033[31m"
-#define COLOR_GREEN  "\033[32m"
-#define COLOR_BOLD  "\033[1m"
-#define RESET  "\033[0m"
+#define COLOR_RED    "\033[31m"
+#define COLOR_YELLOW "\033[33m"
+#define RESET        "\033[0m"
 #define HIDE_CURSOR  "\033[?25l"
 #define SHOW_CURSOR  "\033[?25h"
 #define WHITE_BG     "\033[47m"
@@ -177,7 +181,7 @@ void printfWhileBkgBoolAutoEnter(bool condition, char* format, ...) {
     va_end(args);
 }
 static const char* INFO = "id\t水温（度）\t溶解氧(mg/L)\tPH\t氨氮(mg/L)\t时间";
-static const char* WATCH_END_TIPS = "%d / %d Pages  使用方向键以切换页码，ESC/backspce 以退出";
+static const char* SEE_END_TIPS = "%d / %d Pages  使用方向键以切换页码，ESC/backspce 以退出，排序方式:%s\n1:id 2:温度 3:含氧量 4:ph 5:氨氮量 6:时间";
 static const char* EDIT_END_TIPS = "%d / %d Pages  使用方向键以切换页码，ESC/backspce 以退出\n按下Enter键进入编辑，再次按下Enter键以保存，ESC/Backspace键不保存";
 static const char* DEL_END_TIPS = "%d / %d Pages  使用方向键以切换页码，ESC/backspce 以退出，Del键以删除选择的行";
 static const char* PRINT_WATER_QUALITY_FMT = "%d\t%.2lf\t\t%.2lf\t\t%.2lf\t%.2lf\t\t%s";
@@ -186,12 +190,104 @@ static const int START_INDEX_1 = 0, START_INDEX_2 = 16, START_INDEX_3 = 32, STAR
 static const int END_INDEX_1 = START_INDEX_1 + 4, END_INDEX_2 = START_INDEX_2 + 4, END_INDEX_3 = START_INDEX_3 + 4, END_INDEX_4 = START_INDEX_4 + 3, END_INDEX_5 = START_INDEX_5 + 9, END_INDEX_6 = START_INDEX_6 + 9;
 static const char* STR_TO_TIME_FMT ="%d-%d-%d %d:%d:%d";
 
-static char printTmp[128 * 64];
+static char printBuf[128 * 64 * 2];
 void clearScreen() {
-    printTmp[0] = '\0';
+    printBuf[0] = '\0';
     printf(CLEAR_FULL);
 }
 // 下面方法要输出到缓存里，需要调用screenFlush()来显示
+void printToBuf(char* str) {
+    strcat(printBuf, str);
+}
+// 等同于printWaterQualityAutoEnter
+void printWQAutoEnterBuf(struct WaterQuality * quality) {
+    struct DataRestriction* normalRestriction;
+    struct DataRestriction* seriousRestriction;
+    struct DataRestriction* validRestriction;
+    char hereBuild[128 * 2];
+    char buf[12];
+    if (mode == PENAEUS_VANNAMEI) {
+        normalRestriction = penaeusVannameiNormalData;
+        seriousRestriction = penaeusVannameiSeriousData;
+        validRestriction = penaeusVannameiValidData;
+    } else if (mode == MICROPTERUS_SALMOIDES) {
+        normalRestriction = micropterusSalmoidesNormalData;
+        seriousRestriction = micropterusSalmoidesSeriousData;
+        validRestriction = micropterusSalmoidesValidData;
+    } else {
+        normalRestriction = crassostreaGigasNormalData;
+        seriousRestriction = crassostreaGigasSeriousData;
+        validRestriction = crassostreaGigasValidData;
+    }
+    sprintf(buf, "%d", quality->id);
+    printToBuf(buf);
+
+    printToBuf(TAB);
+    // 温度
+    if (quality->tmp <= normalRestriction->maxTmp && quality->tmp >= normalRestriction->minTmp) {
+    } else if (quality->tmp <= seriousRestriction->maxTmp && quality->tmp >= seriousRestriction->minTmp) {
+        printToBuf(COLOR_YELLOW);
+    } else if (quality->tmp <= validRestriction->maxTmp && quality->tmp >= validRestriction->minTmp) {
+        printToBuf(COLOR_RED);
+    }
+    sprintf(buf, DOUBLE_FMT2, quality->tmp);
+    printToBuf(buf);
+    printToBuf(RESET);
+
+    printToBuf(DOUBLE_TAB);
+    // 含氧量
+    if (quality->doxygen <= normalRestriction->maxDoxygen && quality->doxygen >= normalRestriction->minDoxygen) {
+    } else if (quality->doxygen <= seriousRestriction->maxDoxygen && quality->doxygen >= seriousRestriction->minDoxygen) {
+        printToBuf(COLOR_YELLOW);
+    } else if (quality->doxygen <= validRestriction->maxDoxygen && quality->doxygen >= validRestriction->minDoxygen) {
+        printToBuf(COLOR_RED);
+    }
+    sprintf(buf, DOUBLE_FMT2, quality->doxygen);
+    printToBuf(buf);
+    printToBuf(RESET);
+
+    strcat(printBuf, DOUBLE_TAB);
+    // PH
+    if (quality->ph <= normalRestriction->maxPh && quality->ph >= normalRestriction->minPh) {
+    } else if (quality->ph <= seriousRestriction->maxPh && quality->ph >= seriousRestriction->minPh) {
+        printToBuf(COLOR_YELLOW);
+    } else if (quality->ph <= validRestriction->maxPh && quality->ph >= validRestriction->minPh) {
+        printToBuf(COLOR_RED);
+    }
+    sprintf(buf, DOUBLE_FMT2, quality->ph);
+    printToBuf(buf);
+    printToBuf(RESET);
+
+    printToBuf(TAB);
+    // 氨氮含量
+    if (quality->ammonia <= normalRestriction->maxAmmonia && quality->ammonia >= normalRestriction->minAmmonia) {
+    } else if (quality->ammonia <= seriousRestriction->maxAmmonia && quality->ammonia >= seriousRestriction->minAmmonia) {
+        printToBuf(COLOR_YELLOW);
+    } else if (quality->ammonia <= validRestriction->maxAmmonia && quality->ammonia >= validRestriction->minAmmonia) {
+        printToBuf(COLOR_RED);
+    }
+    sprintf(buf, DOUBLE_FMT2, quality->ammonia);
+    printToBuf(buf);
+    printToBuf(RESET);
+
+    printToBuf(DOUBLE_TAB);
+    // 时间
+    printToBuf(quality->time);
+    printToBuf("\n");
+}
+// 等同于printDefaultAutoEnter
+void printAutoEnterBuf(char* format, ...) {
+    char buf[128];
+    va_list args;
+    va_start(args, format);
+    sscanf(buf, format, args);
+    printToBuf(buf);
+    va_end(args);
+    printToBuf("\n");
+}
+void screenFlush() {
+    printf(printBuf);
+}
 
 // 下面方法直接输出，不输出到输出缓存里
 void printWaterQualityAutoEnter(struct WaterQuality * quality) {
@@ -276,7 +372,9 @@ void chooseModeInit() {
 }
 // 查看历史数据
 void seeHistoryRecord() {
-    int showRowsCount = getVisibleRows() - 2;
+    int sortType = 1; // 排序方式，最开始看是没排序的，从文件怎样读就怎样顺序
+    bool sortEsc = false; // 升序
+    int showRowsCount = getVisibleRows() - 3;
     int page = 0;
     int maxPage = globalRecordList->size % showRowsCount == 0 ? globalRecordList->size / showRowsCount - 1 : globalRecordList->size / showRowsCount;
     while (true) {
@@ -289,10 +387,10 @@ void seeHistoryRecord() {
         for (int i = startIndex; i <= endIndex; i++) {
             printWaterQualityAutoEnter(getAList(globalRecordList, i));
         }
-        printf(WATCH_END_TIPS, page + 1, maxPage + 1);
-        enum KeyType key = waitForAnyKey(6, UP, DOWN, LEFT, RIGHT, ESC, BACKSPACE);
+        printf(SEE_END_TIPS, page + 1, maxPage + 1, sortEsc ? "升序" : "降序");
+        enum KeyType key = waitForAnyKey(12
+            , UP, DOWN, LEFT, RIGHT, ESC, BACKSPACE, NUM1, NUM2, NUM3, NUM4, NUM5, NUM6);
 
-        clearScreen();
         switch (key) {
             case BACKSPACE:
                 return;
@@ -310,8 +408,57 @@ void seeHistoryRecord() {
             case RIGHT:
                 page = page == maxPage ? maxPage : page + 1;
                 break;
+            case NUM1:
+                if (sortType == 1) {
+                    sortEsc = !sortEsc;
+                } else {
+                    sortType = 1;
+                }
+                sort(globalRecordList, sortEsc, sortById);
+                break;
+            case NUM2:
+                if (sortType == 2) {
+                    sortEsc = !sortEsc;
+                } else {
+                    sortType = 2;
+                }
+                sort(globalRecordList, sortEsc, sortByTmp);
+                break;
+            case NUM3:
+                if (sortType == 3) {
+                    sortEsc = !sortEsc;
+                } else {
+                    sortType = 3;
+                }
+                sort(globalRecordList, sortEsc, sortByDoxygen);
+                break;
+            case NUM4:
+                if (sortType == 4) {
+                    sortEsc = !sortEsc;
+                } else {
+                    sortType = 4;
+                }
+                sort(globalRecordList, sortEsc, sortByPh);
+                break;
+            case NUM5:
+                if (sortType == 5) {
+                    sortEsc = !sortEsc;
+                } else {
+                    sortType = 5;
+                }
+                sort(globalRecordList, sortEsc, sortByAmmonia);
+                break;
+            case NUM6:
+                if (sortType == 6) {
+                    sortEsc = !sortEsc;
+                } else {
+                    sortType = 6;
+                }
+                sort(globalRecordList, sortEsc, sortByTime);
+                break;
             default: ;
         }
+        clearScreen();
     }
 }
 void gotoxy(int x, int y) {
@@ -628,6 +775,10 @@ void watchInit() {
     printDefaultAutoEnter("监测完毕！数据已保存，按下任意键返回");
     getKey();
 }
+// 查看统计数据
+void seeStatistics() {
+    clearScreen();
+}
 void userLoopInit() {
     int choose = 1;
     while (true) {
@@ -635,38 +786,41 @@ void userLoopInit() {
         printfWhileBkgBoolAutoEnter(choose == 2, "查看历史数据");
         printfWhileBkgBoolAutoEnter(choose == 3, "修改历史数据");
         printfWhileBkgBoolAutoEnter(choose == 4, "删除历史数据");
-        printfWhileBkgBoolAutoEnter(choose == 5, "退出并保存配置");
+        printfWhileBkgBoolAutoEnter(choose == 5, "查看统计数据");
+        printfWhileBkgBoolAutoEnter(choose == 6, "退出并保存配置");
         enum KeyType key = waitForAnyKey(3, UP, DOWN, ENTER);
         clearScreen();
         switch (key) {
             case UP:
-                choose = choose == 1 ? 5 : choose - 1;
+                choose = choose == 1 ? 6 : choose - 1;
                 break;
             case DOWN:
-                choose = choose == 5 ? 1 : choose + 1;
+                choose = choose == 6 ? 1 : choose + 1;
                 break;
             case ENTER:
                 switch (choose) {
                 case 1:
-                        watchInit();
-                        break;
+                    watchInit();
+                    break;
                 case 2:
-                        seeHistoryRecord();
-                        break;
+                    seeHistoryRecord();
+                    break;
                 case 3:
-                        editHistoryRecord();
-                        break;
+                    editHistoryRecord();
+                    break;
                 case 4:
-                        delHistoryRecord();
-                        break;
+                    delHistoryRecord();
+                    break;
                 case 5:
-                        clearScreen();
-                        writeWaterQualityRecords(globalRecordList);
-                        printDefaultAutoEnter("ByeBye!");
-                        Sleep(3000);
-                        return;
+                    seeStatistics();
+                case 6:
+                    clearScreen();
+                    writeWaterQualityRecords(globalRecordList);
+                    printDefaultAutoEnter("ByeBye!");
+                    Sleep(3000);
+                    return;
                 default:
-                        continue;
+                    continue;
                 }
                 clearScreen();
             default: continue;
