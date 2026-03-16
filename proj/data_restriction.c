@@ -25,7 +25,7 @@ DataRestriction crassostreaGigasValidData = NULL;
 // 保留 n 位小数的通用公式
 double round_to_n_decimals(double value, int n) {
     double factor = pow(10, n);
-    return roundf(value * factor) / factor;
+    return round(value * factor) / factor;
 }
 // 初始化读取这些校验数据
 void initDataRestriction(char* file) {
@@ -73,14 +73,14 @@ void initDataRestriction(char* file) {
                 else if (strcmp(type, "valid") == 0) target = crassostreaGigasValidData;
             }
             if (target != NULL) {
-                target->minTmp = ((double) ((int) roundf(values[0] * 100))) / 100.0f;
-                target->maxTmp = ((double) ((int) roundf(values[1] * 100))) / 100.0f;
-                target->minDoxygen = ((double) ((int) roundf(values[2] * 100))) / 100.0f;
-                target->maxDoxygen = ((double) ((int) roundf(values[3] * 100))) / 100.0f;
-                target->minPh = ((double) ((int) roundf(values[4] * 100))) / 100.0f;
-                target->maxPh = ((double) ((int) roundf(values[5] * 100))) / 100.0f;
-                target->minAmmonia = ((double) ((int) roundf(values[6] * 100))) / 100.0f;
-                target->maxAmmonia = ((double) ((int) roundf(values[7] * 100))) / 100.0f;
+                target->minTmp = ((double) ((int) round(values[0] * 100))) / 100.0f;
+                target->maxTmp = ((double) ((int) round(values[1] * 100))) / 100.0f;
+                target->minDoxygen = ((double) ((int) round(values[2] * 100))) / 100.0f;
+                target->maxDoxygen = ((double) ((int) round(values[3] * 100))) / 100.0f;
+                target->minPh = ((double) ((int) round(values[4] * 100))) / 100.0f;
+                target->maxPh = ((double) ((int) round(values[5] * 100))) / 100.0f;
+                target->minAmmonia = ((double) ((int) round(values[6] * 100))) / 100.0f;
+                target->maxAmmonia = ((double) ((int) round(values[7] * 100))) / 100.0f;
                 target = NULL;
             }
         }
