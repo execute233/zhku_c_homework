@@ -47,8 +47,8 @@ ArrayList readWaterQualityRecords() {
 }
 
 // 辅助方法：生成范围内的随机浮点数
-float randomInRange(float min, float max) {
-    return min + (float)rand() / RAND_MAX * (max - min);
+double randomInRange(double min, double max) {
+    return min + (double) rand() / RAND_MAX * (max - min);
 }
 
 // 辅助方法：生成指定类型的时间字符串

@@ -23,8 +23,8 @@ DataRestriction crassostreaGigasSeriousData = NULL;
 // 南奥牡蛎的数据校验范围
 DataRestriction crassostreaGigasValidData = NULL;
 // 保留 n 位小数的通用公式
-float round_to_n_decimals(float value, int n) {
-    float factor = pow(10, n);
+double round_to_n_decimals(double value, int n) {
+    double factor = pow(10, n);
     return roundf(value * factor) / factor;
 }
 // 初始化读取这些校验数据
@@ -73,14 +73,14 @@ void initDataRestriction(char* file) {
                 else if (strcmp(type, "valid") == 0) target = crassostreaGigasValidData;
             }
             if (target != NULL) {
-                target->minTmp = ((float) ((int) roundf(values[0] * 100))) / 100.0f;
-                target->maxTmp = ((float) ((int) roundf(values[1] * 100))) / 100.0f;
-                target->minDoxygen = ((float) ((int) roundf(values[2] * 100))) / 100.0f;
-                target->maxDoxygen = ((float) ((int) roundf(values[3] * 100))) / 100.0f;
-                target->minPh = ((float) ((int) roundf(values[4] * 100))) / 100.0f;
-                target->maxPh = ((float) ((int) roundf(values[5] * 100))) / 100.0f;
-                target->minAmmonia = ((float) ((int) roundf(values[6] * 100))) / 100.0f;
-                target->maxAmmonia = ((float) ((int) roundf(values[7] * 100))) / 100.0f;
+                target->minTmp = ((double) ((int) roundf(values[0] * 100))) / 100.0f;
+                target->maxTmp = ((double) ((int) roundf(values[1] * 100))) / 100.0f;
+                target->minDoxygen = ((double) ((int) roundf(values[2] * 100))) / 100.0f;
+                target->maxDoxygen = ((double) ((int) roundf(values[3] * 100))) / 100.0f;
+                target->minPh = ((double) ((int) roundf(values[4] * 100))) / 100.0f;
+                target->maxPh = ((double) ((int) roundf(values[5] * 100))) / 100.0f;
+                target->minAmmonia = ((double) ((int) roundf(values[6] * 100))) / 100.0f;
+                target->maxAmmonia = ((double) ((int) roundf(values[7] * 100))) / 100.0f;
                 target = NULL;
             }
         }
@@ -131,7 +131,7 @@ static enum RestrictionType checkData(struct WaterQuality * data, DataRestrictio
 // 回调包括字段名(即WaterQuality里的字段名), 是超过（1）范围还是低于范围（-1）,包括该字段的值
 // 由于读取数据的进度问题
 void checkDataCallbackFiled(struct WaterQuality * data, DataRestriction restriction
-    , enum RestrictionType restrictType, void callback(enum WaterQualityEnum, enum RestrictionType, float value)) {
+    , enum RestrictionType restrictType, void callback(enum WaterQualityEnum, enum RestrictionType, double value)) {
     if (data->tmp < restriction->minTmp || data->tmp > restriction->maxTmp) {
         callback(TMP, restrictType, data->tmp);
     }

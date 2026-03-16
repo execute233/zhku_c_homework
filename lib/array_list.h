@@ -123,9 +123,15 @@ void forEachAList(ArrayList alist, void forEach(void * element));
  * 通过指定的比较方法排序集合，返回的数值>0表示前者元素大于后者元素，<0表示前者元素小于后者元素，=0表示相等
  * @param alist 指定的ArrayList结构体
  * @param flag true表示升序，false表示降序
- * @param compare 比较数
+ * @param compare 比较函数
  ***/
 void sort(ArrayList alist, _Bool flag, int compare(void*, void*));
+/**
+ * 获取集合中最大的元素，返回的数值>0表示前者元素大于后者元素，<0表示前者元素小于后者元素，=0表示相等
+ * @param alist 指定的ArrayList结构体
+ * @param compare 比较函数
+ ***/
+void* max(ArrayList alist, int compare(void*, void*));
 
 
 #endif

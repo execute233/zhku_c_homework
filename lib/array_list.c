@@ -68,7 +68,7 @@ _Bool removeAListRls(ArrayList alist, int index) {
 bool removeAListByPtr(ArrayList alist, void * element) {
     if (alist == NULL || element == NULL) return false;
     int index = findAListByPtr(alist, element);
-    return index < 0? false: removeAList(alist, index);
+    return index < 0 ? false: removeAList(alist, index);
 }
 void* replaceAList(ArrayList alist, int index, void* newElement) {
     if (index < 0 || index >= alist->size) return NULL;
@@ -153,4 +153,15 @@ void sort(ArrayList alist, _Bool flag, int compare(void*, void*)) {
         }
         if (!isSorted) break;
     }
+}
+void* max(ArrayList alist, int compare(void*, void*)) {
+    if (alist == NULL || alist->size < 1 || compare == NULL) return NULL;
+    if (alist->size == 1) return *(alist->array);
+    int maxIndex = 0;
+    for (int i = 1; i < alist->size; i++) {
+        if (compare(alist->array[i], alist->array[maxIndex]) > 0) {
+            maxIndex = i;
+        }
+    }
+    return *(alist->array + maxIndex);
 }

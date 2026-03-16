@@ -64,5 +64,5 @@ static enum RestrictionType checkData(struct WaterQuality * data, DataRestrictio
 // 数据校验回调方法，当某个字段不符合检验要求时，会回调传入的方法
 // 回调包括字段(即WaterQualityEnum), 是超过（1）范围还是低于范围（-1）,包括该字段的值
 void checkDataCallbackFiled(struct WaterQuality * data, DataRestriction restriction
-    , enum RestrictionType, void callback(enum WaterQualityEnum, enum RestrictionType, float value));
+    , enum RestrictionType, void callback(enum WaterQualityEnum, enum RestrictionType, double value));
 #endif
