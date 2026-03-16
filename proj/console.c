@@ -174,6 +174,7 @@ void printfWhileBkgBoolAutoEnter(bool condition, char* format, ...) {
 static const char* INFO = "id\t水温（度）\t溶解氧(mg/L)\tPH\t氨氮(mg/L)\t时间";
 static const char* WATCH_END_TIPS = "%d / %d Pages  使用方向键以切换页码，ESC/backspce 以退出";
 static const char* EDIT_END_TIPS = "%d / %d Pages  使用方向键以切换页码，ESC/backspce 以退出\n按下Enter键进入编辑，再次按下Enter键以保存，ESC/Backspace键不保存";
+static const char* DEL_END_TIPS = "%d / %d Pages  使用方向键以切换页码，ESC/backspce 以退出，Del键以删除选择的行";
 static const char* PRINT_WATER_QUALITY_FMT = "%d\t%.2f\t\t%.2f\t\t%.2f\t%.2f\t\t%s";
 static const char* STR_TO_WQ_FMT = "%d\t%f\t\t%f\t\t%f\t%f\t\t%s%s";
 static const int START_INDEX_1 = 0, START_INDEX_2 = 16, START_INDEX_3 = 32, START_INDEX_4 = 40, START_INDEX_5 = 56, START_INDEX_6 = 67;
@@ -199,6 +200,27 @@ void printWaterQualityAutoEnter(struct WaterQuality * quality) {
         printDefaultAutoEnter(printStr);
     } else {
         printDefaultAutoEnter(printStr);
+    }
+}
+void printWaterQualityWhileBkgAutoEnter(struct WaterQuality * quality) {
+    enum RestrictionType restriction;
+    if (mode == PENAEUS_VANNAMEI) {
+        restriction = checkPenaeusVannameiData(quality);
+    } else if (mode == MICROPTERUS_SALMOIDES) {
+        restriction = checkMicropterusSalmoidesData(quality);
+    } else {
+        restriction = checkCrassostreaGigasData(quality);
+    }
+    char printStr[128];
+    sprintf(printStr, PRINT_WATER_QUALITY_FMT, quality->id, quality->tmp, quality->doxygen, quality->ph, quality->ammonia, quality->time);
+    if (restriction == NORMAL) {
+        printfWhiteBkgAutoEnter(printStr);
+    } else if (restriction == NORMAL_ALERT) {
+        printfWhiteBkgAutoEnter(printStr);
+    } else if (restriction == SERIOUS_ALERT) {
+        printfWhiteBkgAutoEnter(printStr);
+    } else {
+        printfWhiteBkgAutoEnter(printStr);
     }
 }
 // 选择养殖类型
@@ -243,7 +265,7 @@ void chooseModeInit() {
 void seeHistoryRecord() {
     int showRowsCount = getVisibleRows() - 2;
     int page = 0;
-    int maxPage = globalRecordList->size % showRowsCount == 0 ? globalRecordList->size / showRowsCount : globalRecordList->size / showRowsCount + 1;
+    int maxPage = globalRecordList->size % showRowsCount == 0 ? globalRecordList->size / showRowsCount - 1 : globalRecordList->size / showRowsCount;
     while (true) {
         printDefaultAutoEnter(INFO);
         int startIndex = page * showRowsCount;
@@ -415,7 +437,7 @@ bool confirmEdit(ArrayList list, int index) {
 void editHistoryRecord() {
     const int showRowsCount = getVisibleRows() - 3;
     int page = 0;
-    int maxPage = globalRecordList->size % showRowsCount == 0 ? globalRecordList->size / showRowsCount : globalRecordList->size / showRowsCount + 1;
+    int maxPage = globalRecordList->size % showRowsCount == 0 ? globalRecordList->size / showRowsCount - 1 : globalRecordList->size / showRowsCount;
     int currentCursorX = 0, currentCursorY = 0;
     int cursorMinX = 0, cursorMaxX = 74, cursorMinY = 0, cursorMaxY = showRowsCount - 1;
     const int posStartX = 8, posStartY = 1;
@@ -529,6 +551,59 @@ void editHistoryRecord() {
         clearScreen();
     }
 }
+// 删除历史数据
+void delHistoryRecord() {
+    int showRowsCount = getVisibleRows() - 2;
+    int page = 0, chooseRowIndex = 0, maxChoosRowIndex = showRowsCount - 1;
+    int maxPage = globalRecordList->size % showRowsCount == 0 ? globalRecordList->size / showRowsCount - 1 : globalRecordList->size / showRowsCount;
+    while (true) {
+        printDefaultAutoEnter(INFO);
+
+        int startIndex = page * showRowsCount;
+        int endIndex = startIndex + showRowsCount - 1;
+        if (endIndex >= globalRecordList->size) {
+            endIndex = globalRecordList->size - 1;
+        }
+        maxChoosRowIndex = endIndex - startIndex;
+        if (chooseRowIndex > maxChoosRowIndex) chooseRowIndex = maxChoosRowIndex;
+        for (int i = startIndex, currentRow = 0; i <= endIndex; i++, currentRow++) {
+            if (currentRow == chooseRowIndex) {
+                printWaterQualityWhileBkgAutoEnter(getAList(globalRecordList, i));
+            } else {
+                printWaterQualityAutoEnter(getAList(globalRecordList, i));
+            }
+        }
+        printf(WATCH_END_TIPS, page + 1, maxPage + 1);
+        enum KeyType key = waitForAnyKey(7, UP, DOWN, LEFT, RIGHT, ESC, BACKSPACE, DEL);
+
+        clearScreen();
+        switch (key) {
+            case DEL:
+                // 删除当前选择的行的逻辑
+                removeAListRls(globalRecordList, chooseRowIndex + startIndex);
+                // 删除后重新计算最大页数
+                maxPage = globalRecordList->size % showRowsCount == 0 ? globalRecordList->size / showRowsCount - 1 : globalRecordList->size / showRowsCount;
+                if (page > maxPage) page = maxPage;
+                break;
+            case BACKSPACE:
+            case ESC:
+                return;
+            case UP:
+                chooseRowIndex = chooseRowIndex == 0 ? maxChoosRowIndex : chooseRowIndex - 1;
+                break;
+            case DOWN:
+                chooseRowIndex = chooseRowIndex >= maxChoosRowIndex ? 0 : chooseRowIndex + 1;
+                break;
+            case LEFT:
+                page = page == 0 ? 0 : page - 1;
+                break;
+            case RIGHT:
+                page = page == maxPage ? maxPage : page + 1;
+                break;
+            default: ;
+        }
+    }
+}
 // 开始监测逻辑
 void watchInit() {
     printDefaultAutoEnter("开始监测...");
@@ -568,11 +643,13 @@ void userLoopInit() {
                         editHistoryRecord();
                         break;
                 case 4:
-
+                        delHistoryRecord();
                         break;
                 case 5:
+                        clearScreen();
                         writeWaterQualityRecords(globalRecordList);
                         printDefaultAutoEnter("ByeBye!");
+                        Sleep(3000);
                         return;
                 default:
                         continue;
@@ -587,8 +664,6 @@ void initConsole() {
     globalRecordList = readWaterQualityRecords();
     initTerminal();
     chooseModeInit();
-
     userLoopInit();
-    editHistoryRecord();
     printf(SHOW_CURSOR);
 }

@@ -42,6 +42,13 @@ _Bool insertAList(ArrayList alist,void * element, int index);
 */
 _Bool removeAList(ArrayList alist, int index);
 /**
+* 删除指定下标的指针，但会释放其指向的内容
+* @param alist 指定的ArrayList结构体
+* @param index 指定下标
+* @return 是否删除成功
+*/
+_Bool removeAListRls(ArrayList alist, int index);
+/**
 * 删除ArrayList中的指定指针
 * @param alist 指定的ArrayList结构体
 * @param element 元素的引用，可在collection_type_tool.h中构造基本数据类型的地址
@@ -112,6 +119,13 @@ void destroyAListRls(ArrayList alist);
 * @param forEach 遍历函数
 */
 void forEachAList(ArrayList alist, void forEach(void * element));
+/**
+ * 通过指定的比较方法排序集合，返回的数值>0表示前者元素大于后者元素，<0表示前者元素小于后者元素，=0表示相等
+ * @param alist 指定的ArrayList结构体
+ * @param flag true表示升序，false表示降序
+ * @param compare 比较数
+ ***/
+void sort(ArrayList alist, _Bool flag, int compare(void*, void*));
 
 
 #endif

@@ -21,7 +21,7 @@ ArrayList createAList(int capacity) {
 static void checkSizeOrResize(ArrayList alist) {
     if (alist->size >= alist->capacity) {
         int newCapacity = (alist->capacity >> 1) + alist->capacity;
-        // 为什么不用realloc？你会你可以用
+        // 为什么不用realloc?你会你可以用
         void** newArr = malloc( sizeof(void*) * newCapacity);
         if (newArr != alist->array) {
             memcpy(newArr, alist->array, sizeof(void*) * alist->size);
@@ -49,7 +49,16 @@ bool insertAList(ArrayList alist,void * element, int index) {
     return true;
 }
 bool removeAList(ArrayList alist, int index) {
-    if (index < 0 || index >= alist->size) return false;
+    if (alist == NULL || index < 0 || index >= alist->size) return false;
+    for (int i = index + 1; i < alist->size; i++, index++) {
+        *(alist->array + index) = *(alist->array + i);
+    }
+    alist->size--;
+    return true;
+}
+_Bool removeAListRls(ArrayList alist, int index) {
+    if (alist == NULL || index < 0 || index >= alist->size) return false;
+    free(*(alist->array + index));
     for (int i = index + 1; i < alist->size; i++, index++) {
         *(alist->array + index) = *(alist->array + i);
     }
@@ -57,6 +66,7 @@ bool removeAList(ArrayList alist, int index) {
     return true;
 }
 bool removeAListByPtr(ArrayList alist, void * element) {
+    if (alist == NULL || element == NULL) return false;
     int index = findAListByPtr(alist, element);
     return index < 0? false: removeAList(alist, index);
 }
@@ -126,5 +136,21 @@ void forEachAList(ArrayList alist, void forEach(void * element)) {
     if (alist == NULL) return;
     for (int i = 0; i < alist->size; i++) {
         forEach(*(alist->array + i));
+    }
+}
+void sort(ArrayList alist, _Bool flag, int compare(void*, void*)) {
+    if (alist == NULL || alist->size <= 1 || compare == NULL) return;
+    // 使用冒泡排序
+    for (int i = 0; i < alist->size - 1; i++) {
+        _Bool isSorted = false;
+        for (int j = i + 1; j < alist->size; j++) {
+            if (flag ? compare(alist->array[i], alist->array[j]) > 0 : compare(alist->array[i], alist->array[j]) < 0) {
+                void* tmp = alist->array[i];
+                alist->array[i] = alist->array[j];
+                alist->array[j] = tmp;
+                isSorted = true;
+            }
+        }
+        if (!isSorted) break;
     }
 }
