@@ -1,6 +1,5 @@
 #ifndef COLLECTION_ARRAY_LIST_H_
 #define COLLECTION_ARRAY_LIST_H_
-#include "../proj/data.h"
 /**
 * ArrayList的定义，存储指针数组
 * 当前文件中的方法使用非预期的值都会返回无效数据

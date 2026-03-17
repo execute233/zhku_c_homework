@@ -1,4 +1,3 @@
-//
 #ifndef DATA_H
 #define DATA_H
 // 监测数据结构体

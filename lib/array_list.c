@@ -1,6 +1,5 @@
 #include "array_list.h"
 #include <stdlib.h>
-#include <stdbool.h>
 #include <string.h>
 
 ArrayList createAListDefault() {

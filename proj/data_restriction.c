@@ -1,9 +1,6 @@
 #include "data_restriction.h"
-
+#include <stddef.h>
 #include <math.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
 // 南美白对虾的一般警告范围
 DataRestriction penaeusVannameiNormalData = NULL;
 // 南美白对虾的严重警告范围
@@ -67,29 +64,35 @@ static enum RestrictionType checkData(struct WaterQuality * data, DataRestrictio
     }
     return INVALID_DATA;
 }
-bool checkFelid(struct WaterQuality* quality, enum WaterQualityEnum field, DataRestriction restriction) {
-    bool result = false;
+int checkFelid(struct WaterQuality* quality, enum WaterQualityEnum field, DataRestriction restriction) {
     if (field == TMP) {
-        result = quality->tmp >= restriction->minTmp && quality->tmp <= restriction->maxTmp;
-    } else if (field == DOXYGEN) {
-        result = quality->doxygen >= restriction->minDoxygen && quality->doxygen <= restriction->maxDoxygen;
-    } else if (field == AMMONIA) {
-        result = quality->ammonia >= restriction->minAmmonia && quality->ammonia <= restriction->maxAmmonia;
-    } else if (field == PH) {
-        result = quality->ph >= restriction->minPh && quality->ph <= restriction->maxPh;
+        return checkFelidValue(quality->tmp, TMP, restriction);
     }
-    return result;
+    if (field == DOXYGEN) {
+        return checkFelidValue(quality->doxygen, DOXYGEN, restriction);
+    }
+    if (field == AMMONIA) {
+        return checkFelidValue(quality->ammonia, AMMONIA, restriction);
+    }
+    if (field == PH) {
+        return checkFelidValue(quality->ph, PH, restriction);
+    }
+    return 0;
 }
-bool checkFelidValue(double value, enum WaterQualityEnum field, DataRestriction restriction) {
-    bool result = false;
+int checkFelidValue(double value, enum WaterQualityEnum field, DataRestriction restriction) {
+    int result = 0;
     if (field == TMP) {
-        result = value >= restriction->minTmp && value <= restriction->maxTmp;
+        if (value > restriction->maxTmp) result = (int) (value - restriction->maxTmp) * 10000;
+        if (value < restriction->minTmp) result = (int) (value - restriction->minTmp) * 10000;
     } else if (field == DOXYGEN) {
-        result = value >= restriction->minDoxygen && value <= restriction->maxDoxygen;
+        if (value > restriction->maxDoxygen) result = (int) (value - restriction->maxDoxygen) * 10000;
+        if (value < restriction->minDoxygen) result = (int) (value - restriction->minDoxygen) * 10000;
     } else if (field == AMMONIA) {
-        result = value >= restriction->minAmmonia && value <= restriction->maxAmmonia;
+        if (value > restriction->maxAmmonia) result = (int) (value - restriction->maxAmmonia) * 10000;
+        if (value < restriction->minAmmonia) result = (int) (value - restriction->minAmmonia) * 10000;
     } else if (field == PH) {
-        result = value >= restriction->minPh && value <= restriction->maxPh;
+        if (value > restriction->maxPh) result = (int) (value - restriction->maxPh) * 10000;
+        if (value < restriction->minPh) result = (int) (value - restriction->minPh) * 10000;
     }
     return result;
 }
