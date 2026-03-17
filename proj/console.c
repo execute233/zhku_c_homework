@@ -17,8 +17,11 @@
 #define MOVE_CURSOR(y, x) "\033[" #y ";" #x "H"
 #define COLOR_RED    "\033[31m"
 #define COLOR_YELLOW "\033[33m"
+#define COLOR_WHITE  "\033[37m"
+#define COLOR_GRAY   "\033[38;5;245m"
 #define RESET        "\033[0m"
 #define HIDE_CURSOR  "\033[?25l"
+#define CURSOR_BLOCK_BLINK   "\033[1 q"
 #define SHOW_CURSOR  "\033[?25h"
 #define WHITE_BG     "\033[47m"
 #define BLACK_FG     "\033[30m"
@@ -185,6 +188,7 @@ static const char* SEE_END_TIPS = "%d / %d Pages  使用方向键以切换页码
 static const char* EDIT_END_TIPS = "%d / %d Pages  使用方向键以切换页码，ESC/backspce 以退出\n按下Enter键进入编辑，再次按下Enter键以保存，ESC/Backspace键不保存";
 static const char* DEL_END_TIPS = "%d / %d Pages  使用方向键以切换页码，ESC/backspce 以退出，Del键以删除选择的行";
 static const char* PRINT_WATER_QUALITY_FMT = "%d\t%.2lf\t\t%.2lf\t\t%.2lf\t%.2lf\t\t%s";
+static const char* PRINT_WQ_WITH_COLOR_FMT = "%d\t%s%.2lf%s\t\t%s%.2lf%s\t\t%s%.2lf%s\t%s%.2lf%s\t\t%s";
 static const char* STR_TO_WQ_FMT = "%d\t%lf\t\t%lf\t\t%lf\t%lf\t\t%s%s";
 static const int START_INDEX_1 = 0, START_INDEX_2 = 16, START_INDEX_3 = 32, START_INDEX_4 = 40, START_INDEX_5 = 56, START_INDEX_6 = 67;
 static const int END_INDEX_1 = START_INDEX_1 + 4, END_INDEX_2 = START_INDEX_2 + 4, END_INDEX_3 = START_INDEX_3 + 4, END_INDEX_4 = START_INDEX_4 + 3, END_INDEX_5 = START_INDEX_5 + 9, END_INDEX_6 = START_INDEX_6 + 9;
@@ -195,102 +199,10 @@ void clearScreen() {
     printBuf[0] = '\0';
     printf(CLEAR_FULL);
 }
-// 下面方法要输出到缓存里，需要调用screenFlush()来显示
-void printToBuf(char* str) {
-    strcat(printBuf, str);
-}
-// 等同于printWaterQualityAutoEnter
-void printWQAutoEnterBuf(struct WaterQuality * quality) {
-    struct DataRestriction* normalRestriction;
-    struct DataRestriction* seriousRestriction;
-    struct DataRestriction* validRestriction;
-    char hereBuild[128 * 2];
-    char buf[12];
-    if (mode == PENAEUS_VANNAMEI) {
-        normalRestriction = penaeusVannameiNormalData;
-        seriousRestriction = penaeusVannameiSeriousData;
-        validRestriction = penaeusVannameiValidData;
-    } else if (mode == MICROPTERUS_SALMOIDES) {
-        normalRestriction = micropterusSalmoidesNormalData;
-        seriousRestriction = micropterusSalmoidesSeriousData;
-        validRestriction = micropterusSalmoidesValidData;
-    } else {
-        normalRestriction = crassostreaGigasNormalData;
-        seriousRestriction = crassostreaGigasSeriousData;
-        validRestriction = crassostreaGigasValidData;
-    }
-    sprintf(buf, "%d", quality->id);
-    printToBuf(buf);
-
-    printToBuf(TAB);
-    // 温度
-    if (quality->tmp <= normalRestriction->maxTmp && quality->tmp >= normalRestriction->minTmp) {
-    } else if (quality->tmp <= seriousRestriction->maxTmp && quality->tmp >= seriousRestriction->minTmp) {
-        printToBuf(COLOR_YELLOW);
-    } else if (quality->tmp <= validRestriction->maxTmp && quality->tmp >= validRestriction->minTmp) {
-        printToBuf(COLOR_RED);
-    }
-    sprintf(buf, DOUBLE_FMT2, quality->tmp);
-    printToBuf(buf);
-    printToBuf(RESET);
-
-    printToBuf(DOUBLE_TAB);
-    // 含氧量
-    if (quality->doxygen <= normalRestriction->maxDoxygen && quality->doxygen >= normalRestriction->minDoxygen) {
-    } else if (quality->doxygen <= seriousRestriction->maxDoxygen && quality->doxygen >= seriousRestriction->minDoxygen) {
-        printToBuf(COLOR_YELLOW);
-    } else if (quality->doxygen <= validRestriction->maxDoxygen && quality->doxygen >= validRestriction->minDoxygen) {
-        printToBuf(COLOR_RED);
-    }
-    sprintf(buf, DOUBLE_FMT2, quality->doxygen);
-    printToBuf(buf);
-    printToBuf(RESET);
-
-    strcat(printBuf, DOUBLE_TAB);
-    // PH
-    if (quality->ph <= normalRestriction->maxPh && quality->ph >= normalRestriction->minPh) {
-    } else if (quality->ph <= seriousRestriction->maxPh && quality->ph >= seriousRestriction->minPh) {
-        printToBuf(COLOR_YELLOW);
-    } else if (quality->ph <= validRestriction->maxPh && quality->ph >= validRestriction->minPh) {
-        printToBuf(COLOR_RED);
-    }
-    sprintf(buf, DOUBLE_FMT2, quality->ph);
-    printToBuf(buf);
-    printToBuf(RESET);
-
-    printToBuf(TAB);
-    // 氨氮含量
-    if (quality->ammonia <= normalRestriction->maxAmmonia && quality->ammonia >= normalRestriction->minAmmonia) {
-    } else if (quality->ammonia <= seriousRestriction->maxAmmonia && quality->ammonia >= seriousRestriction->minAmmonia) {
-        printToBuf(COLOR_YELLOW);
-    } else if (quality->ammonia <= validRestriction->maxAmmonia && quality->ammonia >= validRestriction->minAmmonia) {
-        printToBuf(COLOR_RED);
-    }
-    sprintf(buf, DOUBLE_FMT2, quality->ammonia);
-    printToBuf(buf);
-    printToBuf(RESET);
-
-    printToBuf(DOUBLE_TAB);
-    // 时间
-    printToBuf(quality->time);
-    printToBuf("\n");
-}
-// 等同于printDefaultAutoEnter
-void printAutoEnterBuf(char* format, ...) {
-    char buf[128];
-    va_list args;
-    va_start(args, format);
-    sscanf(buf, format, args);
-    printToBuf(buf);
-    va_end(args);
-    printToBuf("\n");
-}
-void screenFlush() {
-    printf(printBuf);
-}
 
 // 下面方法直接输出，不输出到输出缓存里
 void printWaterQualityAutoEnter(struct WaterQuality * quality) {
+    /*
     enum RestrictionType restriction;
     if (mode == PENAEUS_VANNAMEI) {
         restriction = checkPenaeusVannameiData(quality);
@@ -310,6 +222,70 @@ void printWaterQualityAutoEnter(struct WaterQuality * quality) {
     } else {
         printDefaultAutoEnter(printStr);
     }
+    */
+    struct DataRestriction* normalRestriction;
+    struct DataRestriction* seriousRestriction;
+    struct DataRestriction* validRestriction;
+    char buf[128 * 2];
+    if (mode == PENAEUS_VANNAMEI) {
+        normalRestriction = penaeusVannameiNormalData;
+        seriousRestriction = penaeusVannameiSeriousData;
+        validRestriction = penaeusVannameiValidData;
+    } else if (mode == MICROPTERUS_SALMOIDES) {
+        normalRestriction = micropterusSalmoidesNormalData;
+        seriousRestriction = micropterusSalmoidesSeriousData;
+        validRestriction = micropterusSalmoidesValidData;
+    } else {
+        normalRestriction = crassostreaGigasNormalData;
+        seriousRestriction = crassostreaGigasSeriousData;
+        validRestriction = crassostreaGigasValidData;
+    }
+    char* tmpColor;
+    char* doxygenColor;
+    char* phColor;
+    char* ammoniaColor;
+    // 温度
+    if (quality->tmp <= normalRestriction->maxTmp && quality->tmp >= normalRestriction->minTmp) {
+        tmpColor = COLOR_WHITE;
+    } else if (quality->tmp <= seriousRestriction->maxTmp && quality->tmp >= seriousRestriction->minTmp) {
+        tmpColor = COLOR_YELLOW;
+    } else if (quality->tmp <= validRestriction->maxTmp && quality->tmp >= validRestriction->minTmp) {
+        tmpColor = COLOR_RED;
+    } else {
+        tmpColor = COLOR_GRAY;
+    }
+    // 含氧量
+    if (quality->doxygen <= normalRestriction->maxDoxygen && quality->doxygen >= normalRestriction->minDoxygen) {
+        doxygenColor = COLOR_WHITE;
+    } else if (quality->doxygen <= seriousRestriction->maxDoxygen && quality->doxygen >= seriousRestriction->minDoxygen) {
+        doxygenColor = COLOR_YELLOW;
+    } else if (quality->doxygen <= validRestriction->maxDoxygen && quality->doxygen >= validRestriction->minDoxygen) {
+        doxygenColor = COLOR_RED;
+    } else {
+        doxygenColor = COLOR_GRAY;
+    }
+    // PH
+    if (quality->ph <= normalRestriction->maxPh && quality->ph >= normalRestriction->minPh) {
+        phColor = COLOR_WHITE;
+    } else if (quality->ph <= seriousRestriction->maxPh && quality->ph >= seriousRestriction->minPh) {
+        phColor = COLOR_YELLOW;
+    } else if (quality->ph <= validRestriction->maxPh && quality->ph >= validRestriction->minPh) {
+        phColor = COLOR_RED;
+    } else {
+        doxygenColor = COLOR_GRAY;
+    }
+    // 氨氮含量
+    if (quality->ammonia <= normalRestriction->maxAmmonia && quality->ammonia >= normalRestriction->minAmmonia) {
+        ammoniaColor = COLOR_WHITE;
+    } else if (quality->ammonia <= seriousRestriction->maxAmmonia && quality->ammonia >= seriousRestriction->minAmmonia) {
+        ammoniaColor = COLOR_YELLOW;
+    } else if (quality->ammonia <= validRestriction->maxAmmonia && quality->ammonia >= validRestriction->minAmmonia) {
+        ammoniaColor = COLOR_RED;
+    } else {
+        doxygenColor = COLOR_GRAY;
+    }
+    sprintf(buf, PRINT_WQ_WITH_COLOR_FMT, quality->id, tmpColor, quality->tmp, COLOR_WHITE, doxygenColor, quality->doxygen, COLOR_WHITE, phColor, quality->ph, COLOR_WHITE, ammoniaColor, quality->ammonia, COLOR_WHITE, quality->time);
+    printDefaultAutoEnter(buf);
 }
 void printWaterQualityWhileBkgAutoEnter(struct WaterQuality * quality) {
     enum RestrictionType restriction;
@@ -595,6 +571,7 @@ bool confirmEdit(ArrayList list, int index) {
 }
 // 修改历史数据
 void editHistoryRecord() {
+    bool needFlush = true;
     const int showRowsCount = getVisibleRows() - 3;
     int page = 0;
     int maxPage = globalRecordList->size % showRowsCount == 0 ? globalRecordList->size / showRowsCount - 1 : globalRecordList->size / showRowsCount;
@@ -608,10 +585,14 @@ void editHistoryRecord() {
     while (true) {
         if (edit) {
             printf(SHOW_CURSOR);
+            printf(CURSOR_BLOCK_BLINK);
         } else {
+            needFlush = true;
             printf(HIDE_CURSOR);
         }
-        printDefaultAutoEnter(INFO);
+        if (needFlush) {
+            printDefaultAutoEnter(INFO);
+        }
         int startIndex = page * showRowsCount;
         int endIndex = startIndex + showRowsCount - 1;
         if (endIndex >= globalRecordList->size) {
@@ -619,17 +600,18 @@ void editHistoryRecord() {
         }
         cursorMaxY = endIndex - startIndex;
         // 输出水质数据
-        if (!edit) {
-            for (int i = startIndex; i <= endIndex; i++) {
-                printWaterQualityAutoEnter(getAList(globalRecordList, i));
+        if (needFlush) {
+            if (!edit) {
+                for (int i = startIndex; i <= endIndex; i++) {
+                    printWaterQualityAutoEnter(getAList(globalRecordList, i));
+                }
+            } else {
+                for (int i = 0; i < bufList->size; i++) {
+                    printDefaultAutoEnter(getAList(bufList, i));
+                }
             }
-        } else {
-            for (int i = 0; i < bufList->size; i++) {
-                printDefaultAutoEnter(getAList(bufList, i));
-            }
+            printf(EDIT_END_TIPS, page + 1, maxPage + 1);
         }
-
-        printf(EDIT_END_TIPS, page + 1, maxPage + 1);
         // 光标要在输出完成后移动
         gotoxy(posStartX + currentCursorX, posStartY + currentCursorY);
         enum KeyType key = waitForAnyKey(18, UP, DOWN, LEFT, RIGHT, ESC, BACKSPACE, ENTER
@@ -640,6 +622,7 @@ void editHistoryRecord() {
             case BACKSPACE:
             case ESC:
                 if (edit) {
+                    needFlush = true;
                     edit = false;
                 } else {
                     return;
@@ -647,6 +630,7 @@ void editHistoryRecord() {
                 break;
             case ENTER:
                 if (edit) {
+                    needFlush = true;
                     bool confirm_edit = confirmEdit(bufList, startIndex);
                     clearScreen();
                     if (confirm_edit) {
@@ -657,6 +641,7 @@ void editHistoryRecord() {
                     Sleep(3000);
                     edit = false;
                 } else {
+                    needFlush = true;
                     clearAListRls(bufList);
                     // 将当前页的数据缓存起来
                     bufList = cpyAList(globalRecordList, startIndex, endIndex - startIndex + 1);
@@ -665,25 +650,31 @@ void editHistoryRecord() {
                 break;
             case UP:
                 if (edit) {
+                    needFlush = false;
                     currentCursorY = currentCursorY == cursorMinY ? cursorMinY : currentCursorY - 1;
                 }
                 break;
             case DOWN:
                 if (edit) {
+                    needFlush = false;
                     currentCursorY = currentCursorY == cursorMaxY ? cursorMaxY : currentCursorY + 1;
                 }
                 break;
             case LEFT:
                 if (edit) {
+                    needFlush = false;
                     currentCursorX = currentCursorX == cursorMinX ? cursorMinX : quickJump(currentCursorX, true);
                 } else {
+                    needFlush = true;
                     page = page == 0 ? 0 : page - 1;
                 }
                 break;
             case RIGHT:
                 if (edit) {
+                    needFlush = false;
                     currentCursorX = currentCursorX == cursorMaxX ? cursorMaxX : quickJump(currentCursorX, false);
                 } else {
+                    needFlush = true;
                     page = page == maxPage ? maxPage : page + 1;
                 }
                 break;
@@ -699,6 +690,7 @@ void editHistoryRecord() {
             case NUM9:
             case DOT:
                 if (edit) {
+                    needFlush = true;
                     char* str = getAList(bufList, currentCursorY);
                     if (key == DOT) {
                         doReplace(str, currentCursorX, '.');
@@ -709,7 +701,9 @@ void editHistoryRecord() {
                 break;
             default: ;
         }
-        clearScreen();
+        if (needFlush) {
+            clearScreen();
+        }
     }
 }
 // 删除历史数据
@@ -777,6 +771,97 @@ void watchInit() {
 }
 // 查看统计数据
 void seeStatistics() {
+    if (globalRecordList->size == 0) {
+        printDefaultAutoEnter("无统计数据");
+        Sleep(3000);
+        return;
+    }
+    // 这里统计计算
+    double size = globalRecordList->size;
+    struct DataRestriction* normalRestriction;
+    struct DataRestriction* seriousRestriction;
+    struct DataRestriction* validRestriction;
+    if (mode == PENAEUS_VANNAMEI) {
+        normalRestriction = penaeusVannameiNormalData;
+        seriousRestriction = penaeusVannameiSeriousData;
+        validRestriction = penaeusVannameiValidData;
+    } else if (mode == MICROPTERUS_SALMOIDES) {
+        normalRestriction = micropterusSalmoidesNormalData;
+        seriousRestriction = micropterusSalmoidesSeriousData;
+        validRestriction = micropterusSalmoidesValidData;
+    } else {
+        normalRestriction = crassostreaGigasNormalData;
+        seriousRestriction = crassostreaGigasSeriousData;
+        validRestriction = crassostreaGigasValidData;
+    }
+    struct WaterQuality* q1 = getAList(globalRecordList, 0);
+    double tmpSum = 0, doxygenSum = 0, phSum = 0, ammoniaSum = 0;
+    double tmpMax = q1->tmp, doxygenMax = q1->doxygen, phMax = q1->ph, ammoniaMax = q1->ammonia;
+    double tmpMin = q1->tmp, doxygenMin = q1->doxygen, phMin = q1->ph, ammoniaMin = q1->ammonia;
+    int normalTmpCount = 0, normalDoxygenCount = 0, normalPhCount = 0, normalAmmoniaCount = 0;
+    int normalAlertTmpCount = 0, normalAlertDoxygenCount = 0, normalAlertPhCount = 0, normalAlertAmmoniaCount = 0;
+    int seriousAlertTmpCount = 0, seriousAlertDoxygenCount = 0, seriousAlertPhCount = 0, seriousAlertAmmoniaCount = 0;
+    for (int i = 0; i < globalRecordList->size; i++) {
+        struct WaterQuality* q = getAList(globalRecordList, i);
+        tmpSum += q->tmp;
+        doxygenSum += q->doxygen;
+        phSum += q->ph;
+        ammoniaSum += q->ammonia;
+        tmpMax = q->tmp > tmpMax ? q->tmp : tmpMax;
+        doxygenMax = q->doxygen > doxygenMax ? q->doxygen : doxygenMax;
+        phMax = q->ph > phMax ? q->ph : phMax;
+        ammoniaMax = q->ammonia > ammoniaMax ? q->ammonia : ammoniaMax;
+        tmpMin = q->tmp < tmpMin ? q->tmp : tmpMin;
+        doxygenMin = q->doxygen < doxygenMin ? q->doxygen : doxygenMin;
+        phMin = q->ph < phMin ? q->ph : phMin;
+        ammoniaMin = q->ammonia < ammoniaMin ? q->ammonia : ammoniaMin;
+        if (q->tmp >= normalRestriction->minTmp && q->tmp <= normalRestriction->maxTmp) {
+            normalTmpCount++;
+        } else if (q->tmp >= seriousRestriction->minTmp && q->tmp <= seriousRestriction->maxTmp) {
+            normalAlertTmpCount++;
+        } else if (q->tmp >= validRestriction->minTmp && q->tmp <= validRestriction->maxTmp) {
+            seriousAlertTmpCount++;
+        }
+        if (q->doxygen >= normalRestriction->minDoxygen && q->doxygen <= normalRestriction->maxDoxygen) {
+            normalDoxygenCount++;
+        } else if (q->doxygen >= seriousRestriction->minDoxygen && q->doxygen <= seriousRestriction->maxDoxygen) {
+            normalAlertDoxygenCount++;
+        } else if (q->doxygen >= validRestriction->minDoxygen && q->doxygen <= validRestriction->maxDoxygen) {
+            seriousAlertDoxygenCount++;
+        }
+        if (q->ph >= normalRestriction->minPh && q->ph <= normalRestriction->maxPh) {
+            normalPhCount++;
+        } else if (q->ph >= seriousRestriction->minPh && q->ph <= seriousRestriction->maxPh) {
+            normalAlertPhCount++;
+        } else if (q->ph >= validRestriction->minPh && q->ph <= validRestriction->maxPh) {
+            seriousAlertPhCount++;
+        }
+        if (q->ammonia >= normalRestriction->minAmmonia && q->ammonia <= normalRestriction->maxAmmonia) {
+            normalAmmoniaCount++;
+        } else if (q->ammonia >= seriousRestriction->minAmmonia && q->ammonia <= seriousRestriction->maxAmmonia) {
+            normalAlertAmmoniaCount++;
+        } else if (q->ammonia >= validRestriction->minAmmonia && q->ammonia <= validRestriction->maxAmmonia) {
+            seriousAlertAmmoniaCount++;
+        }
+    }
+    //        温度 溶解氧 PH 氨氮
+    // 平均值   xx  xx   xx  xx
+    // 最大值   xx  xx   xx  xx
+    // 最小值   xx  xx   xx  xx
+    // 正常(%)
+    // 一般告警
+    // 严重告警
+    double tmpAvg = tmpSum / size, doxygenAvg = doxygenSum / size
+        , phAvg = phSum / size, ammoniaAvg = ammoniaSum / size;
+    printf("\t\t温度\t溶解氧\tPH\t氨氮\n");
+    printf("平均值\t\t%.2lf\t%.2lf\t%.2lf\t%.2lf\n", tmpAvg, doxygenAvg, phAvg, ammoniaAvg);
+    printf("最大值\t\t%.2lf\t%.2lf\t%.2lf\t%.2lf\n", tmpMax, doxygenMax, phMax, ammoniaMax);
+    printf("最小值\t\t%.2lf\t%.2lf\t%.2lf\t%.2lf\n", tmpMin, doxygenMin, phMin, ammoniaMin);
+    printf("正常(%%)\t\t%.2lf%%\t%.2lf%%\t%.2lf%%\t%.2lf%%\n", 100.0 * normalTmpCount / size, 100.0 * normalDoxygenCount / size, 100.0 * normalPhCount / size, 100.0 * normalAmmoniaCount / size);
+    printf("一般告警(%%)\t%.2lf%%\t%.2lf%%\t%.2lf%%\t%.2lf%%\n", 100.0 * normalAlertTmpCount / size, 100.0 * normalAlertDoxygenCount / size, 100.0 * normalAlertPhCount / size, 100.0 * normalAlertAmmoniaCount / size);
+    printf("严重告警(%%)\t%.2lf%%\t%.2lf%%\t%.2lf%%\t%.2lf%%\n", 100.0 * seriousAlertTmpCount / size, 100.0 * seriousAlertDoxygenCount / size, 100.0 * seriousAlertPhCount / size, 100.0 * seriousAlertAmmoniaCount / size);
+    printf("按下Enter键返回");
+    waitForRightKey(ENTER);
     clearScreen();
 }
 void userLoopInit() {
@@ -813,6 +898,7 @@ void userLoopInit() {
                     break;
                 case 5:
                     seeStatistics();
+                    break;
                 case 6:
                     clearScreen();
                     writeWaterQualityRecords(globalRecordList);

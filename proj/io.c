@@ -136,6 +136,7 @@ struct ArrayList * generateAndSaveRandomWaterQualityData(int count, enum Mode mo
     } else if (mode == CRASSOSTRA_GIGAS) {
         validData = crassostreaGigasNormalData;
     }
+    validData = penaeusVannameiValidData;
 
     char timeBuf[20];
     for (int i = 0; i < count; i++) {
