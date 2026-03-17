@@ -1,14 +1,13 @@
 #include "console.h"
+#include "data_restriction.h"
+#include "io.h"
+#include "sort.h"
+#include "user_management.h"
 #include <stdio.h>
 #include <stdarg.h>
 #include <conio.h>
 #include <windows.h>
 #include <time.h>
-
-#include "data.h"
-#include "data_restriction.h"
-#include "io.h"
-#include "sort.h"
 #define TAB          "\t"
 #define DOUBLE_TAB   "\t\t"
 #define DOUBLE_FMT   "%lf"
@@ -32,11 +31,7 @@
 enum Mode mode = PENAEUS_VANNAMEI;
 struct ArrayList * globalRecordList = NULL;
 // 操作的按键
-enum KeyType {
-    NUM0, NUM1, NUM2, NUM3, NUM4, NUM5, NUM6, NUM7, NUM8, NUM9, DOT
-    , UP, DOWN, LEFT, RIGHT, ENTER, BACKSPACE, DEL, SPACE, ESC
-    , UNKOWN
-};
+
 static u_int beforeConsoleOutputCP;
 // 针对windows终端的控制
 void initTerminal() {
@@ -201,28 +196,7 @@ void clearScreen() {
 }
 
 // 下面方法直接输出，不输出到输出缓存里
-void printWaterQualityAutoEnter(struct WaterQuality * quality) {
-    /*
-    enum RestrictionType restriction;
-    if (mode == PENAEUS_VANNAMEI) {
-        restriction = checkPenaeusVannameiData(quality);
-    } else if (mode == MICROPTERUS_SALMOIDES) {
-        restriction = checkMicropterusSalmoidesData(quality);
-    } else {
-        restriction = checkCrassostreaGigasData(quality);
-    }
-    char printStr[128];
-    sprintf(printStr, PRINT_WATER_QUALITY_FMT, quality->id, quality->tmp, quality->doxygen, quality->ph, quality->ammonia, quality->time);
-    if (restriction == NORMAL) {
-        printDefaultAutoEnter(printStr);
-    } else if (restriction == NORMAL_ALERT) {
-        printDefaultAutoEnter(printStr);
-    } else if (restriction == SERIOUS_ALERT) {
-        printDefaultAutoEnter(printStr);
-    } else {
-        printDefaultAutoEnter(printStr);
-    }
-    */
+void printWaterQualityAutoEnter(struct WaterQuality* quality) {
     struct DataRestriction* normalRestriction;
     struct DataRestriction* seriousRestriction;
     struct DataRestriction* validRestriction;
@@ -864,52 +838,120 @@ void seeStatistics() {
     waitForRightKey(ENTER);
     clearScreen();
 }
+
+// ---------- 用户管理界面（仅管理员）----------
+void manageUsers() {
+    if (!is_user_logged_in() || !get_current_user()->is_admin) {
+        printDefaultAutoEnter("无权限！");
+        Sleep(1500);
+        return;
+    }
+
+    ArrayList users = get_all_users();
+    if (!users || users->size == 0) {
+        printDefaultAutoEnter("暂无用户！");
+        Sleep(1500);
+        return;
+    }
+
+    int rows = getVisibleRows() - 3;
+    int page = 0, row = 0;
+    int maxPage = (users->size - 1) / rows;
+
+    while (1) {
+        clearScreen();
+        printDefaultAutoEnter("=== 用户管理 ===");
+        printDefaultAutoEnter("用户名\t\t管理员\t状态");
+
+        int start = page * rows;
+        int end = start + rows - 1;
+        if (end >= users->size) end = users->size - 1;
+        int maxRow = end - start;
+        if (row > maxRow) row = maxRow;
+
+        for (int i = start, cur = 0; i <= end; i++, cur++) {
+            User* u = (User*)getAList(users, i);
+            char line[128];
+            sprintf(line, "%s\t\t%s\t%s", u->username,
+                    u->is_admin ? "是" : "否",
+                    (strcmp(u->username, get_current_user()->username) == 0) ? "当前用户" : "");
+            if (cur == row) printfWhileBkgBoolAutoEnter(true, "%s", line);
+            else printDefaultAutoEnter("%s", line);
+        }
+        printf("第 %d/%d 页  方向键切换，Del删除（不能删自己），ESC返回\n", page+1, maxPage+1);
+
+        enum KeyType key = waitForAnyKey(7, UP, DOWN, LEFT, RIGHT, DEL, ESC, BACKSPACE);
+        switch (key) {
+            case DEL: {
+                int idx = start + row;
+                User* u = (User*)getAList(users, idx);
+                if (strcmp(u->username, get_current_user()->username) == 0) {
+                    printDefaultAutoEnter("不能删除当前登录用户！");
+                    Sleep(1500);
+                    break;
+                }
+                clearScreen();
+                printDefaultAutoEnter("确认删除 %s？(y/n)", u->username);
+                if (_getch() == 'y' || _getch() == 'Y') {
+                    if (delete_user_by_username(u->username)) {
+                        printDefaultAutoEnter("删除成功！");
+                        maxPage = (users->size - 1) / rows;
+                        if (page > maxPage) page = maxPage;
+                        if (row >= (end - start + 1)) row = 0;
+                    } else {
+                        printDefaultAutoEnter("删除失败！");
+                    }
+                    Sleep(1500);
+                }
+                break;
+            }
+            case ESC: case BACKSPACE: return;
+            case UP:   row = (row == 0) ? maxRow : row - 1; break;
+            case DOWN: row = (row >= maxRow) ? 0 : row + 1; break;
+            case LEFT: if (page > 0) page--; row = 0; break;
+            case RIGHT: if (page < maxPage) page++; row = 0; break;
+            default: break;
+        }
+    }
+}
+
+// ---------- 主用户菜单 ----------
 void userLoopInit() {
-    int choose = 1;
+    int choice = 1;
+    bool isAdmin = is_user_logged_in() && get_current_user()->is_admin;
+    int maxChoice = isAdmin ? 7 : 6;
+
     while (true) {
-        printfWhileBkgBoolAutoEnter(choose == 1, "开始监测");
-        printfWhileBkgBoolAutoEnter(choose == 2, "查看历史数据");
-        printfWhileBkgBoolAutoEnter(choose == 3, "修改历史数据");
-        printfWhileBkgBoolAutoEnter(choose == 4, "删除历史数据");
-        printfWhileBkgBoolAutoEnter(choose == 5, "查看统计数据");
-        printfWhileBkgBoolAutoEnter(choose == 6, "退出并保存配置");
+        printfWhileBkgBoolAutoEnter(choice == 1, "1. 开始监测");
+        printfWhileBkgBoolAutoEnter(choice == 2, "2. 查看历史数据");
+        printfWhileBkgBoolAutoEnter(choice == 3, "3. 修改历史数据");
+        printfWhileBkgBoolAutoEnter(choice == 4, "4. 删除历史数据");
+        printfWhileBkgBoolAutoEnter(choice == 5, "5. 查看统计数据");
+        if (isAdmin)
+            printfWhileBkgBoolAutoEnter(choice == 6, "6. 用户管理");
+        printfWhileBkgBoolAutoEnter(choice == maxChoice, isAdmin ? "7. 退出并保存" : "6. 退出并保存");
+
         enum KeyType key = waitForAnyKey(3, UP, DOWN, ENTER);
         clearScreen();
+
         switch (key) {
-            case UP:
-                choose = choose == 1 ? 6 : choose - 1;
-                break;
-            case DOWN:
-                choose = choose == 6 ? 1 : choose + 1;
-                break;
+            case UP: choice = (choice == 1) ? maxChoice : choice - 1; break;
+            case DOWN: choice = (choice == maxChoice) ? 1 : choice + 1; break;
             case ENTER:
-                switch (choose) {
-                case 1:
-                    watchInit();
-                    break;
-                case 2:
-                    seeHistoryRecord();
-                    break;
-                case 3:
-                    editHistoryRecord();
-                    break;
-                case 4:
-                    delHistoryRecord();
-                    break;
-                case 5:
-                    seeStatistics();
-                    break;
-                case 6:
-                    clearScreen();
+                if (choice == 1) watchInit();
+                else if (choice == 2) seeHistoryRecord();
+                else if (choice == 3) editHistoryRecord();
+                else if (choice == 4) delHistoryRecord();
+                else if (choice == 5) seeStatistics();
+                else if (choice == 6 && isAdmin) manageUsers();
+                else if (choice == maxChoice) {
                     writeWaterQualityRecords(globalRecordList);
                     printDefaultAutoEnter("ByeBye!");
                     Sleep(3000);
                     return;
-                default:
-                    continue;
                 }
-                clearScreen();
-            default: continue;
+            clearScreen();
+            default: ;
         }
         clearScreen();
     }
@@ -917,6 +959,12 @@ void userLoopInit() {
 void initConsole() {
     globalRecordList = readWaterQualityRecords();
     initTerminal();
+    init_user_system();         // 初始化用户系统
+    if (!user_login_loop()) {   // 登录循环，若选择退出则结束
+        printf("已退出系统。\n");
+        return;
+    }
+    clearScreen();
     chooseModeInit();
     userLoopInit();
     exitTerminal();
