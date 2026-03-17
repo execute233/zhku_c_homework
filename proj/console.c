@@ -765,7 +765,7 @@ void watchInit() {
     printDefaultAutoEnter("[生成随机数据模拟监测]");
     clearAListRls(globalRecordList);
     free(globalRecordList);
-    globalRecordList = generateAndSaveRandomWaterQualityData( 1000, mode);
+    globalRecordList = generateRandomWaterQualityData( 1000, mode);
     printDefaultAutoEnter("监测完毕！数据已保存，按下任意键返回");
     getKey();
 }

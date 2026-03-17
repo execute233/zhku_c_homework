@@ -67,6 +67,32 @@ static enum RestrictionType checkData(struct WaterQuality * data, DataRestrictio
     }
     return INVALID_DATA;
 }
+bool checkFelid(struct WaterQuality* quality, enum WaterQualityEnum field, DataRestriction restriction) {
+    bool result = false;
+    if (field == TMP) {
+        result = quality->tmp >= restriction->minTmp && quality->tmp <= restriction->maxTmp;
+    } else if (field == DOXYGEN) {
+        result = quality->doxygen >= restriction->minDoxygen && quality->doxygen <= restriction->maxDoxygen;
+    } else if (field == AMMONIA) {
+        result = quality->ammonia >= restriction->minAmmonia && quality->ammonia <= restriction->maxAmmonia;
+    } else if (field == PH) {
+        result = quality->ph >= restriction->minPh && quality->ph <= restriction->maxPh;
+    }
+    return result;
+}
+bool checkFelidValue(double value, enum WaterQualityEnum field, DataRestriction restriction) {
+    bool result = false;
+    if (field == TMP) {
+        result = value >= restriction->minTmp && value <= restriction->maxTmp;
+    } else if (field == DOXYGEN) {
+        result = value >= restriction->minDoxygen && value <= restriction->maxDoxygen;
+    } else if (field == AMMONIA) {
+        result = value >= restriction->minAmmonia && value <= restriction->maxAmmonia;
+    } else if (field == PH) {
+        result = value >= restriction->minPh && value <= restriction->maxPh;
+    }
+    return result;
+}
 // 数据校验回调方法，当某个字段不符合检验要求时，会回调传入的方法
 // 回调包括字段名(即WaterQuality里的字段名), 是超过（1）范围还是低于范围（-1）,包括该字段的值
 // 由于读取数据的进度问题

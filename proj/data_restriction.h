@@ -59,6 +59,8 @@ enum RestrictionType checkCrassostreaGigasData(struct WaterQuality * data);
 // 通用数据校验方法
 static enum RestrictionType checkData(struct WaterQuality * data, DataRestriction normal
     , DataRestriction serious, DataRestriction valid);
+bool checkFelid(struct WaterQuality* quality, enum WaterQualityEnum field, DataRestriction restriction);
+bool checkFelidValue(double value, enum WaterQualityEnum field, DataRestriction restriction);
 // 数据校验回调方法，当某个字段不符合检验要求时，会回调传入的方法
 // 回调包括字段(即WaterQualityEnum), 是超过（1）范围还是低于范围（-1）,包括该字段的值
 void checkDataCallbackFiled(struct WaterQuality * data, DataRestriction restriction

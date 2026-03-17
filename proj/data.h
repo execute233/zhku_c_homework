@@ -1,8 +1,6 @@
 //
 #ifndef DATA_H
 #define DATA_H
-#include "../lib/array_list.h"
-#include "console.h"
 // 监测数据结构体
 struct WaterQuality {
    int id; // 记录唯一id
