@@ -12,7 +12,6 @@ include_directories(proj)
 
 set(LIB_SOURCES
     lib/array_list.c
-    lib/collection_type_ptr.c
 )
 
 set(PROJ_SOURCES
@@ -20,7 +19,7 @@ set(PROJ_SOURCES
     proj/data.c
     proj/io.c
     proj/console.c
-   proj/sort.c
+    proj/sort.c
 )
 
 add_executable(fuck_zhku_homework 
