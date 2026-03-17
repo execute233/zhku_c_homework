@@ -82,8 +82,8 @@ int checkFelid(struct WaterQuality* quality, enum WaterQualityEnum field, DataRe
 int checkFelidValue(double value, enum WaterQualityEnum field, DataRestriction restriction) {
     int result = 0;
     if (field == TMP) {
-        if (value > restriction->maxTmp) result = (int) (value - restriction->maxTmp) * 10000;
-        if (value < restriction->minTmp) result = (int) (value - restriction->minTmp) * 10000;
+        if (value > restriction->maxTmp) result = (int) ((value - restriction->maxTmp) * 10000);
+        if (value < restriction->minTmp) result = (int) ((value - restriction->minTmp) * 10000);
     } else if (field == DOXYGEN) {
         if (value > restriction->maxDoxygen) result = (int) (value - restriction->maxDoxygen) * 10000;
         if (value < restriction->minDoxygen) result = (int) (value - restriction->minDoxygen) * 10000;

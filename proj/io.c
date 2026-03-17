@@ -115,7 +115,7 @@ double randomInRange(double min, double max) {
     return min + (double) rand() / RAND_MAX * (max - min);
 }
 bool randomBool(double probability) {
-    return probability < randomInRange(0.0, 1.0);
+    return probability > randomInRange(0.0, 1.0);
 }
 double randomInRangeContinuous(double baseValue, double maxChange) {
     return randomInRange(baseValue - maxChange, baseValue + maxChange);
@@ -153,11 +153,11 @@ struct ArrayList* generateRandomWaterQualityData(int count, enum Mode mode) {
     // 每次生成的数据基于上一次的变化范围
     const double tmpChange = 0.5, doxygenChange = 0.1, phChange = 0.07, ammoniaChange = 0.015;
     // 当随机生成的数据达到正常范围的阈值时，有多大的概率随机到一般警告范围
-    const double tmpNormalAlertProbability = 0.2, doxygenNormalAlertProbability = 0.2, phNormalAlertProbability = 0.2, ammoniaNormalAlertProbability = 0.2;
+    const double tmpNormalAlertProbability = 0.5, doxygenNormalAlertProbability = 0.5, phNormalAlertProbability = 0.5, ammoniaNormalAlertProbability = 0.5;
     // 当随机生成的数据达到一般警告范围的阈值时，有多大的概率随机到严重警告范围
-    const double tmpSeriousAlertProbability = 0.05, doxygenSeriousAlertProbability = 0.05, phSeriousAlertProbability = 0.05, ammoniaSeriousAlertProbability = 0.05;
+    const double tmpSeriousAlertProbability = 0.5, doxygenSeriousAlertProbability = 0.5, phSeriousAlertProbability = 0.5, ammoniaSeriousAlertProbability = 0.5;
     // 修正系数，当生成的数据达到了严重警告范围的数据，下一次生成的数据有多大概率往正常的方向移动
-    const double alphaTmp = 0.9, alphaDoxygen = 0.9, alphaPh = 0.9, alphaAmmonia = 0.8;
+    const double alphaTmp = 0.6, alphaDoxygen = 0.6, alphaPh = 0.6, alphaAmmonia = 0.6;
     // 记录的数据间隔(秒)
     const int second = 30;
     time_t randomTimeStart = now - (second * count);
