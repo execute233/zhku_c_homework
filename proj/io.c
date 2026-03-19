@@ -159,7 +159,7 @@ struct ArrayList* generateRandomWaterQualityData(int count, enum Mode mode) {
     // 修正系数，当生成的数据达到了严重警告范围的数据，下一次生成的数据有多大概率往正常的方向移动
     const double alphaTmp = 0.6, alphaDoxygen = 0.6, alphaPh = 0.6, alphaAmmonia = 0.6;
     // 记录的数据间隔(秒)
-    const int second = 30;
+    const int second = 60 * 2;
     time_t randomTimeStart = now - (second * count);
     // 生成的数据是不可能超出合法范围的
     // 第一条数据从正常数据随机出来，后续的数据都基于上一条随机

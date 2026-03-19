@@ -96,21 +96,3 @@ int checkFelidValue(double value, enum WaterQualityEnum field, DataRestriction r
     }
     return result;
 }
-// 数据校验回调方法，当某个字段不符合检验要求时，会回调传入的方法
-// 回调包括字段名(即WaterQuality里的字段名), 是超过（1）范围还是低于范围（-1）,包括该字段的值
-// 由于读取数据的进度问题
-void checkDataCallbackFiled(struct WaterQuality * data, DataRestriction restriction
-    , enum RestrictionType restrictType, void callback(enum WaterQualityEnum, enum RestrictionType, double value)) {
-    if (data->tmp < restriction->minTmp || data->tmp > restriction->maxTmp) {
-        callback(TMP, restrictType, data->tmp);
-    }
-    if (data->doxygen < restriction->minDoxygen || data->doxygen > restriction->maxDoxygen) {
-        callback(DOXYGEN, restrictType, data->doxygen);
-    }
-    if (data->ph < restriction->minPh || data->ph > restriction->maxPh) {
-        callback(PH, restrictType, data->ph);
-    }
-    if (data->ammonia < restriction->minAmmonia || data->ammonia > restriction->maxAmmonia) {
-        callback(AMMONIA, restrictType, data->ammonia);
-    }
-}

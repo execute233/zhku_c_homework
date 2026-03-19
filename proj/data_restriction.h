@@ -9,7 +9,6 @@
 // 当数据超出严重警告范围时，但数据在合法范围内，处于严重警告状态
 // 当数据超出了其校验范围时，该数据应当丢弃，因为数据不合法
 typedef struct DataRestriction {
-    // TODO: 改double
     double minTmp;
     double maxTmp;
     double minDoxygen;
@@ -61,8 +60,5 @@ static enum RestrictionType checkData(struct WaterQuality * data, DataRestrictio
 // 校验字段，符合标准时返回0，小于标准时<0，大于标准时返回>0
 int checkFelid(struct WaterQuality* quality, enum WaterQualityEnum field, DataRestriction restriction);
 int checkFelidValue(double value, enum WaterQualityEnum field, DataRestriction restriction);
-// 数据校验回调方法，当某个字段不符合检验要求时，会回调传入的方法
-// 回调包括字段(即WaterQualityEnum), 是超过（1）范围还是低于范围（-1）,包括该字段的值
-void checkDataCallbackFiled(struct WaterQuality * data, DataRestriction restriction
-    , enum RestrictionType, void callback(enum WaterQualityEnum, enum RestrictionType, double value));
+
 #endif

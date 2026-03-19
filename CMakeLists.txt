@@ -21,6 +21,8 @@ set(PROJ_SOURCES
     proj/console.c
     proj/sort.c
     proj/user_management.c
+        proj/statistics.c
+        proj/statistics.h
 )
 
 add_executable(fuck_zhku_homework 
