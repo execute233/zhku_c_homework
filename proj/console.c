@@ -364,6 +364,7 @@ void seeHistoryRecord() {
                 } else {
                     sortType = 1;
                 }
+                page = 0;
                 sort(globalRecordList, sortEsc, sortById);
                 break;
             case NUM2:
@@ -372,6 +373,7 @@ void seeHistoryRecord() {
                 } else {
                     sortType = 2;
                 }
+                page = 0;
                 sort(globalRecordList, sortEsc, sortByTmp);
                 break;
             case NUM3:
@@ -380,6 +382,7 @@ void seeHistoryRecord() {
                 } else {
                     sortType = 3;
                 }
+                page = 0;
                 sort(globalRecordList, sortEsc, sortByDoxygen);
                 break;
             case NUM4:
@@ -388,6 +391,7 @@ void seeHistoryRecord() {
                 } else {
                     sortType = 4;
                 }
+                page = 0;
                 sort(globalRecordList, sortEsc, sortByPh);
                 break;
             case NUM5:
@@ -396,6 +400,7 @@ void seeHistoryRecord() {
                 } else {
                     sortType = 5;
                 }
+                page = 0;
                 sort(globalRecordList, sortEsc, sortByAmmonia);
                 break;
             case NUM6:
@@ -404,6 +409,7 @@ void seeHistoryRecord() {
                 } else {
                     sortType = 6;
                 }
+                page = 0;
                 sort(globalRecordList, sortEsc, sortByTime);
                 break;
             default: ;
@@ -781,7 +787,7 @@ void manageUsers() {
                     u->is_admin ? "是" : "否",
                     (strcmp(u->username, get_current_user()->username) == 0) ? "当前用户" : "");
             if (cur == row) printfWhiteBkgAutoEnter(line);
-            else printDefaultAutoEnter("%s", line);
+            else printDefaultAutoEnter(line);
         }
         printf("第 %d/%d 页  方向键切换，Del删除（不能删自己），ESC返回\n", page+1, maxPage+1);
 
