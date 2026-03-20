@@ -137,23 +137,55 @@ void forEachAList(ArrayList alist, void forEach(void * element)) {
         forEach(*(alist->array + i));
     }
 }
-void sort(ArrayList alist, _Bool esc, int compare(void*, void*)) {
-    if (alist == NULL || alist->size <= 1 || compare == NULL) return;
-    // 使用冒泡排序
-    for (int i = 0; i < alist->size - 1; i++) {
-        _Bool isSorted = false;
-        for (int j = i + 1; j < alist->size; j++) {
-            if (esc ? compare(alist->array[i], alist->array[j]) > 0 : compare(alist->array[i], alist->array[j]) < 0) {
-                void* tmp = alist->array[i];
-                alist->array[i] = alist->array[j];
-                alist->array[j] = tmp;
-                isSorted = true;
-            }
+// 合并两个有序数组
+static void merge(void** array, void** temp, int left, int mid, int right, _Bool esc, int compare(void*, void*)) {
+    int i = left;      // 左半部分起始索引
+    int j = mid + 1;   // 右半部分起始索引
+    int k = left;      // 临时数组索引
+    // 比较两个部分，将较小的元素放入临时数组
+    while (i <= mid && j <= right) {
+        int cmpResult = compare(array[i], array[j]);
+        if (esc ? cmpResult <= 0 : cmpResult >= 0) {
+            temp[k++] = array[i++];
+        } else {
+            temp[k++] = array[j++];
         }
-        if (!isSorted) break;
+    }
+    // 复制左半部分剩余元素
+    while (i <= mid) {
+        temp[k++] = array[i++];
+    }
+    // 复制右半部分剩余元素
+    while (j <= right) {
+        temp[k++] = array[j++];
+    }
+    // 将临时数组的元素复制回原数组
+    for (i = left; i <= right; i++) {
+        array[i] = temp[i];
     }
 }
-void* max(ArrayList alist, int compare(void*, void*)) {
+// 归并排序递归函数
+static void mergeSort(void** array, void** temp, int left, int right, _Bool esc, int compare(void*, void*)) {
+    if (left >= right) return;
+    int mid = left + (right - left) / 2;
+    // 左半部分
+    mergeSort(array, temp, left, mid, esc, compare);
+    // 右半部分
+    mergeSort(array, temp, mid + 1, right, esc, compare);
+    // 合并两个有序数组
+    merge(array, temp, left, mid, right, esc, compare);
+}
+void sort(ArrayList alist, _Bool esc, int compare(void*, void*)) {
+    if (alist == NULL || alist->size <= 1 || compare == NULL) return;
+    // 由于数据量较大，使用归并排序
+    // 分配临时数组
+    void** temp = malloc(sizeof(void*) * alist->capacity);
+    if (!temp) return;
+    // 归并排序
+    mergeSort(alist->array, temp, 0, alist->size - 1, esc, compare);
+    free(temp);
+}
+void* getMax(ArrayList alist, int compare(void*, void*)) {
     if (alist == NULL || alist->size < 1 || compare == NULL) return NULL;
     if (alist->size == 1) return *(alist->array);
     int maxIndex = 0;

@@ -130,7 +130,7 @@ void sort(ArrayList alist, _Bool esc, int compare(void*, void*));
  * @param alist 指定的ArrayList结构体
  * @param compare 比较函数
  ***/
-void* max(ArrayList alist, int compare(void*, void*));
+void* getMax(ArrayList alist, int compare(void*, void*));
 
 
 #endif

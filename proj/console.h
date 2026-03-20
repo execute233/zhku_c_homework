@@ -42,6 +42,7 @@ void initConsole();
 void seeHistoryRecord();
 void editHistoryRecord();
 void delHistoryRecord();
+void addHistoryRecord();
 void watchInit();
 void seeStatistics();
 void manageUsers();

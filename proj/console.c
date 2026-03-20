@@ -149,7 +149,7 @@ int getVisibleRows() {
 void printDefaultAutoEnter(char* format, ...) {
     va_list args;
     va_start(args, format);
-    printf(format, args);
+    vprintf(format, args);
     va_end(args);
     printf("\n");
 }
@@ -158,7 +158,7 @@ void printfWhiteBkgAutoEnter(char* format, ...) {
     va_list args;
     va_start(args, format);
     printf(STYLE_INVERTED);
-    printf(format, args);
+    vprintf(format, args);
     va_end(args);
     printf(RESET);
     printf("\n");
@@ -169,11 +169,11 @@ void printfWhileBkgBoolAutoEnter(bool condition, char* format, ...) {
     va_start(args, format);
     if (condition) {
         printf(STYLE_INVERTED);
-        printf(format, args);
+        vprintf(format, args);
         printf(RESET);
         printf("\n");
     } else {
-        printf(format, args);
+        vprintf(format, args);
         printf("\n");
     }
     va_end(args);
@@ -802,7 +802,7 @@ void manageUsers() {
                     break;
                 }
                 clearScreen();
-                printDefaultAutoEnter("确认删除 %s？(y/n)", u->username);
+                printf("确认删除 %s？(y/n)\n", u->username);
                 if (_getch() == 'y' || _getch() == 'Y') {
                     if (delete_user_by_username(u->username)) {
                         printDefaultAutoEnter("删除成功！");
@@ -816,7 +816,8 @@ void manageUsers() {
                 }
                 break;
             }
-            case ESC: case BACKSPACE: return;
+            case ESC: case BACKSPACE:
+                return;
             case UP:   row = (row == 0) ? maxRow : row - 1; break;
             case DOWN: row = (row >= maxRow) ? 0 : row + 1; break;
             case LEFT: if (page > 0) page--; row = 0; break;
@@ -869,20 +870,6 @@ void userLoopInit() {
         clearScreen();
     }
 }
-void initConsole() {
-    globalRecordList = readWaterQualityRecords();
-    initTerminal();
-    init_user_system();         // 初始化用户系统
-    if (!user_login_loop()) {   // 登录循环，若选择退出则结束
-        printf("已退出系统。\n");
-        return;
-    }
-    clearScreen();
-    chooseModeInit();
-    userLoopInit();
-    exitTerminal();
-}
-
 //新增
 static void input_password(char* pwd, int max_len) {
     int i = 0;
@@ -901,7 +888,6 @@ static void input_password(char* pwd, int max_len) {
     pwd[i] = '\0';
     printf("\n");
 }
-
 void changePassword() {
     if (!is_user_logged_in()) {
         printDefaultAutoEnter("请先登录！");
@@ -934,4 +920,17 @@ void changePassword() {
         printDefaultAutoEnter("密码修改失败（旧密码错误）！");
     }
     Sleep(1500);
+}
+void initConsole() {
+    globalRecordList = readWaterQualityRecords();
+    initTerminal();
+    init_user_system();         // 初始化用户系统
+    if (!user_login_loop()) {   // 登录循环，若选择退出则结束
+        printf("已退出系统。\n");
+        return;
+    }
+    clearScreen();
+    chooseModeInit();
+    userLoopInit();
+    exitTerminal();
 }

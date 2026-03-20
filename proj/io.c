@@ -151,13 +151,13 @@ struct ArrayList* generateRandomWaterQualityData(int count, enum Mode mode) {
     }
     // 下面常量规定了随机生成的方案
     // 每次生成的数据基于上一次的变化范围
-    const double tmpChange = 0.5, doxygenChange = 0.1, phChange = 0.07, ammoniaChange = 0.015;
+    const double tmpChange = 0.5, doxygenChange = 0.1, phChange = 0.07, ammoniaChange = 0.005;
     // 当随机生成的数据达到正常范围的阈值时，有多大的概率随机到一般警告范围
-    const double tmpNormalAlertProbability = 0.5, doxygenNormalAlertProbability = 0.5, phNormalAlertProbability = 0.5, ammoniaNormalAlertProbability = 0.5;
+    const double tmpNormalAlertProbability = 0.5, doxygenNormalAlertProbability = 0.5, phNormalAlertProbability = 0.5, ammoniaNormalAlertProbability = 0.3;
     // 当随机生成的数据达到一般警告范围的阈值时，有多大的概率随机到严重警告范围
     const double tmpSeriousAlertProbability = 0.5, doxygenSeriousAlertProbability = 0.5, phSeriousAlertProbability = 0.5, ammoniaSeriousAlertProbability = 0.5;
     // 修正系数，当生成的数据达到了严重警告范围的数据，下一次生成的数据有多大概率往正常的方向移动
-    const double alphaTmp = 0.6, alphaDoxygen = 0.6, alphaPh = 0.6, alphaAmmonia = 0.6;
+    const double alphaTmp = 0.6, alphaDoxygen = 0.6, alphaPh = 0.6, alphaAmmonia = 0.7;
     // 记录的数据间隔(秒)
     const int second = 60 * 2;
     time_t randomTimeStart = now - (second * count);

@@ -77,8 +77,7 @@ static void load_users() {
         }
         return;
     }
-
-    char line[256];
+    char line[128];
     while (fgets(line, sizeof(line), f)) {
         // 去除行尾换行符（兼容 Windows 和 Unix）
         size_t len = strlen(line);
@@ -92,6 +91,7 @@ static void load_users() {
         int admin_flag = 0;  // 临时变量，用于接收整数
         // 使用宽度限制：最多读取 49 个字符到 username 和 password
         if (sscanf(line, "%49[^,],%49[^,],%d",
+        // if (sscanf(line, "%s, %s, %d",
                    u->username, u->password, &admin_flag) == 3) {
             // 将整数转换为 bool（非零视为 true）
             u->is_admin = (admin_flag != 0);
@@ -115,6 +115,7 @@ void save_users() {
     for (int i = 0; i < user_list->size; i++) {
         User* u = (User*)getAList(user_list, i);
         fprintf(f, "%s,%s,%d\n", u->username, u->password, u->is_admin);
+        // fprintf(f, "%s, %s, %d\n", u->username, u->password, u->is_admin);
     }
     fclose(f);
 }
@@ -191,29 +192,55 @@ bool user_login_loop() {
                     }
                 } else if (choice == 2) { // 注册
                     clearScreen();
-                    printDefaultAutoEnter("新用户名:");
+                    printDefaultAutoEnter("=== 注册新用户 ===");
+
                     char name[50];
-                    scanf("%49s", name); while(getchar()!='\n');
-                    if (find_user(name)) {
-                        printDefaultAutoEnter("用户已存在！");
-                        Sleep(1500);
-                        break;
-                    }
+                    int valid;
+                    do {
+                        valid = 1;
+                        printDefaultAutoEnter("新用户名 (只能包含字母、数字、下划线):");
+                        scanf("%49s", name);
+                        while(getchar()!='\n');  // 清空输入缓冲区
+
+                        // 检查字符合法性
+                        for (int i = 0; name[i]; i++) {
+                            if (!isalnum(name[i]) && name[i] != '_') {
+                                valid = 0;
+                                printDefaultAutoEnter("用户名只能包含字母、数字和下划线！");
+                                Sleep(1500);
+                                clearScreen();
+                                printDefaultAutoEnter("=== 注册新用户 ===");
+                                break;
+                            }
+                        }
+
+                        // 若字符合法，检查用户名是否已存在
+                        if (valid && find_user(name)) {
+                            valid = 0;
+                            printDefaultAutoEnter("用户已存在！");
+                            Sleep(1500);
+                            clearScreen();
+                            printDefaultAutoEnter("=== 注册新用户 ===");
+                        }
+                    } while (!valid);
+
+                    // 输入密码
                     printDefaultAutoEnter("新密码:");
                     char pwd[50];
                     get_password(pwd, 50);
 
+                    // 创建新用户
                     User* nu = (User*)malloc(sizeof(User));
                     strcpy(nu->username, name);
-                    strcpy(nu->password, pwd);
-                    nu->is_admin = false;   // 注册用户默认为普通用户
+                    nu->is_admin = false;
                     addAList(user_list, nu);
-                    save_users();            // 立即保存到文件
+                    save_users();
+
                     printDefaultAutoEnter("注册成功！请登录");
                     Sleep(1500);
-                    choice = 1;              // 回到登录选项
+                    choice = 1;  // 返回登录选项
                     clearScreen();
-                    continue;
+                    continue;    // 继续主循环（回到登录菜单）
                 } else { // 退出
                     return false;
                 }
