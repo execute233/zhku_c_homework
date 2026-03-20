@@ -2,6 +2,7 @@
 #define CONSOLE_H
 #include "../lib/array_list.h"
 #include "data.h"
+#include <stdbool.h>
 
 // 指示选择的养殖类型
 enum Mode {

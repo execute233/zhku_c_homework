@@ -171,7 +171,9 @@ bool user_login_loop() {
                     clearScreen();
                     printDefaultAutoEnter("用户名:");
                     char name[50];
-                    scanf("%49s", name); while(getchar()!='\n');  // 清空输入缓冲
+                    scanf("%49s", name);
+                    while(getchar()!='\n') {}
+                    // 清空输入缓冲
                     printDefaultAutoEnter("密码:");
                     char pwd[50];
                     get_password(pwd, 50);
