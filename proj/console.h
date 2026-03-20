@@ -46,4 +46,8 @@ void watchInit();
 void seeStatistics();
 void manageUsers();
 
+//新增
+void changePassword();
+static void input_password(char* pwd, int max_len);
+
 #endif

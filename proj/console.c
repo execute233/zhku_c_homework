@@ -830,7 +830,7 @@ void manageUsers() {
 void userLoopInit() {
     int choice = 1;
     bool isAdmin = is_user_logged_in() && get_current_user()->is_admin;
-    int maxChoice = isAdmin ? 7 : 6;
+    int maxChoice = isAdmin ? 8 : 7;   // 增加一个选项
 
     while (true) {
         printfWhileBkgBoolAutoEnter(choice == 1, "1. 开始监测");
@@ -838,9 +838,10 @@ void userLoopInit() {
         printfWhileBkgBoolAutoEnter(choice == 3, "3. 修改历史数据");
         printfWhileBkgBoolAutoEnter(choice == 4, "4. 删除历史数据");
         printfWhileBkgBoolAutoEnter(choice == 5, "5. 查看统计数据");
+        printfWhileBkgBoolAutoEnter(choice == 6, "6. 修改密码");          // 新增
         if (isAdmin)
-            printfWhileBkgBoolAutoEnter(choice == 6, "6. 用户管理");
-        printfWhileBkgBoolAutoEnter(choice == maxChoice, isAdmin ? "7. 退出并保存" : "6. 退出并保存");
+            printfWhileBkgBoolAutoEnter(choice == 7, "7. 用户管理");       // 管理员选项后移
+        printfWhileBkgBoolAutoEnter(choice == maxChoice, isAdmin ? "8. 退出并保存" : "7. 退出并保存");
 
         enum KeyType key = waitForAnyKey(3, UP, DOWN, ENTER);
         clearScreen();
@@ -854,7 +855,8 @@ void userLoopInit() {
                 else if (choice == 3) editHistoryRecord();
                 else if (choice == 4) delHistoryRecord();
                 else if (choice == 5) seeStatistics();
-                else if (choice == 6 && isAdmin) manageUsers();
+                else if (choice == 6) changePassword();                  // 新增
+                else if (choice == 7 && isAdmin) manageUsers();          // 管理员选项
                 else if (choice == maxChoice) {
                     writeWaterQualityRecords(globalRecordList);
                     printDefaultAutoEnter("ByeBye!");
@@ -879,4 +881,57 @@ void initConsole() {
     chooseModeInit();
     userLoopInit();
     exitTerminal();
+}
+
+//新增
+static void input_password(char* pwd, int max_len) {
+    int i = 0;
+    char ch;
+    while ((ch = _getch()) != '\r' && i < max_len - 1) {
+        if (ch == '\b' || ch == 8) {          // 退格键
+            if (i > 0) {
+                i--;
+                printf("\b \b");               // 擦除上一个星号
+            }
+        } else {
+            pwd[i++] = ch;
+            printf("*");                        // 显示掩码
+        }
+    }
+    pwd[i] = '\0';
+    printf("\n");
+}
+
+void changePassword() {
+    if (!is_user_logged_in()) {
+        printDefaultAutoEnter("请先登录！");
+        Sleep(1500);
+        return;
+    }
+
+    char old_pwd[50], new_pwd[50], confirm_pwd[50];
+
+    clearScreen();
+    printDefaultAutoEnter("=== 修改密码 ===");
+    printDefaultAutoEnter("请输入旧密码：");
+    input_password(old_pwd, 50);
+
+    printDefaultAutoEnter("请输入新密码：");
+    input_password(new_pwd, 50);
+
+    printDefaultAutoEnter("请再次输入新密码：");
+    input_password(confirm_pwd, 50);
+
+    if (strcmp(new_pwd, confirm_pwd) != 0) {
+        printDefaultAutoEnter("两次输入的新密码不一致！");
+        Sleep(1500);
+        return;
+    }
+
+    if (change_password(old_pwd, new_pwd)) {
+        printDefaultAutoEnter("密码修改成功！");
+    } else {
+        printDefaultAutoEnter("密码修改失败（旧密码错误）！");
+    }
+    Sleep(1500);
 }

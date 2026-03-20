@@ -19,4 +19,7 @@ void save_users();
 ArrayList get_all_users();
 bool delete_user_by_username(const char* username);
 
+//新
+bool change_password(const char* old_pwd, const char* new_pwd);
+
 #endif

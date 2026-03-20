@@ -284,3 +284,38 @@ bool delete_user_by_username(const char* username) {
     }
     return false;   // 未找到用户
 }
+
+/**
+ * @brief 修改当前登录用户的密码
+ * @param old_pwd 旧密码
+ * @param new_pwd 新密码
+ * @return true 修改成功；false 修改失败（未登录或旧密码错误）
+ */
+bool change_password(const char* old_pwd, const char* new_pwd) {
+    // 1. 检查是否已登录
+    if (!logged_in) {
+        return false;
+    }
+
+    // 2. 验证旧密码
+    if (strcmp(current_user.password, old_pwd) != 0) {
+        return false;
+    }
+
+    // 3. 更新当前用户对象的密码
+    strcpy(current_user.password, new_pwd);
+
+    // 4. 同步更新 user_list 中对应条目的密码
+    for (int i = 0; i < user_list->size; i++) {
+        User* u = (User*)getAList(user_list, i);
+        if (strcmp(u->username, current_user.username) == 0) {
+            strcpy(u->password, new_pwd);
+            break;
+        }
+    }
+
+    // 5. 保存到文件
+    save_users();
+
+    return true;
+}
