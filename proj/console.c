@@ -3,11 +3,15 @@
 #include "io.h"
 #include "sort.h"
 #include "user_management.h"
+#include "water_warning.h"
 #include <stdio.h>
 #include <stdarg.h>
 #include <conio.h>
 #include <windows.h>
 #include <time.h>
+
+
+
 #define TAB          "\t"
 #define DOUBLE_TAB   "\t\t"
 #define DOUBLE_FMT   "%lf"
@@ -304,12 +308,15 @@ void chooseModeInit() {
                 switch (choose) {
                 case 1:
                         mode = PENAEUS_VANNAMEI;
+                        show_warning_after_login(1);
                         break;
                 case 2:
                         mode = MICROPTERUS_SALMOIDES;
+                        show_warning_after_login(2);
                         break;
                 case 3:
                         mode = CRASSOSTRA_GIGAS;
+                        show_warning_after_login(3);
                         break;
                 default:
                         continue;

@@ -9,14 +9,14 @@
 // 当数据超出严重警告范围时，但数据在合法范围内，处于严重警告状态
 // 当数据超出了其校验范围时，该数据应当丢弃，因为数据不合法
 typedef struct DataRestriction {
-    double minTmp;
-    double maxTmp;
-    double minDoxygen;
-    double maxDoxygen;
-    double minPh;
-    double maxPh;
-    double minAmmonia;
-    double maxAmmonia;
+    double minTmp; // 最小温度
+    double maxTmp; // 最大温度
+    double minDoxygen; // 最小悬浮氧
+    double maxDoxygen; // 最大悬浮氧
+    double minPh; // 最小ph
+    double maxPh; // 最大ph
+    double minAmmonia; // 最小氨氮
+    double maxAmmonia; // 最大氨氮
 } * DataRestriction;
 // 用于指示数据的警告范围、或者数据是否合法
 enum RestrictionType {

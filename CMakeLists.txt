@@ -22,6 +22,7 @@ set(PROJ_SOURCES
     proj/sort.c
     proj/user_management.c
     proj/statistics.c
+    proj/water_warning.c
 )
 
 add_executable(fuck_zhku_homework
