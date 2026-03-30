@@ -833,23 +833,140 @@ void manageUsers() {
         }
     }
 }
+void addHistoryRecord() {
+    struct WaterQuality* quality = malloc(sizeof(struct WaterQuality));
+    DataRestriction restriction = penaeusVannameiValidData;
+    if (mode == MICROPTERUS_SALMOIDES) {
+        restriction = micropterusSalmoidesValidData;
+    } else if (mode == PENAEUS_VANNAMEI) {
+        restriction = penaeusVannameiValidData;
+    } else if (mode == CRASSOSTRA_GIGAS) {
+        restriction = crassostreaGigasValidData;
+    }
+
+    // 找到当前最大的 id
+    int maxId = ((struct WaterQuality*) getMax(globalRecordList, sortById))->id;
+    quality->id = maxId + 1;
+    
+    clearScreen();
+    printDefaultAutoEnter("请输入水温（度）:");
+    if (scanf("%lf", &quality->tmp) != 1 || checkFelidValue(quality->tmp, TMP, restriction)) {
+        printDefaultAutoEnter("输入无效！");
+        free(quality);
+        Sleep(1500);
+        return;
+    }
+    
+    printDefaultAutoEnter("请输入溶解氧 (mg/L):");
+    if (scanf("%lf", &quality->doxygen) != 1 || checkFelidValue(quality->doxygen, DOXYGEN, restriction)) {
+        printDefaultAutoEnter("输入无效！");
+        free(quality);
+        Sleep(1500);
+        return;
+    }
+    
+    printDefaultAutoEnter("请输入PH值:");
+    if (scanf("%lf", &quality->ph) != 1 || checkFelidValue(quality->ph, PH, restriction)) {
+        printDefaultAutoEnter("输入无效！");
+        free(quality);
+        Sleep(1500);
+        return;
+    }
+    
+    printDefaultAutoEnter("请输入氨氮含量:");
+    if (scanf("%lf", &quality->ammonia) != 1 || checkFelidValue(quality->ammonia, AMMONIA, restriction)) {
+        printDefaultAutoEnter("输入无效！");
+        free(quality);
+        Sleep(1500);
+        return;
+    }
+    
+    // 清除输入缓冲区
+    while (getchar() != '\n');
+    
+    // 输入时间字符串
+    printDefaultAutoEnter("请输入时间(如 2026-01-01 00:00:00)");
+    char timeInput[30];
+    if (fgets(timeInput, sizeof(timeInput), stdin) == NULL) {
+        printDefaultAutoEnter("输入无效！");
+        free(quality);
+        Sleep(1500);
+        return;
+    }
+    
+    // 移除换行符
+    size_t len = strlen(timeInput);
+    if (len > 0 && timeInput[len - 1] == '\n') {
+        timeInput[len - 1] = '\0';
+    }
+    
+    // 解析并验证时间格式
+    int year, month, day, hour, min, sec;
+    if (sscanf(timeInput, "%d-%d-%d %d:%d:%d", &year, &month, &day, &hour, &min, &sec) != 6) {
+        printDefaultAutoEnter("时间格式错误！");
+        free(quality);
+        Sleep(2000);
+        return;
+    }
+    
+    // 构建时间结构
+    struct tm tm_time = {0};
+    tm_time.tm_year = year - 1900;
+    tm_time.tm_mon = month - 1;
+    tm_time.tm_mday = day;
+    tm_time.tm_hour = hour;
+    tm_time.tm_min = min;
+    tm_time.tm_sec = sec;
+    tm_time.tm_isdst = -1;
+    
+    // 验证时间的有效性
+    time_t inputTime = mktime(&tm_time);
+    if (inputTime == -1) {
+        printDefaultAutoEnter("输入的时间无效！");
+        free(quality);
+        Sleep(2000);
+        return;
+    }
+    
+    // 获取当前时间
+    time_t now = time(NULL);
+    
+    // 验证输入时间不能超过当前时间
+    if (inputTime > now) {
+        printDefaultAutoEnter("输入的时间不能晚于当前时间！");
+        printDefaultAutoEnter("当前时间：%s", ctime(&now));
+        free(quality);
+        Sleep(2500);
+        return;
+    }
+    
+    // 将时间复制到水质记录中
+    strcpy(quality->time, timeInput);
+    
+    // 添加到全局记录列表
+    addAList(globalRecordList, quality);
+
+    printDefaultAutoEnter("保存成功");
+    Sleep(3000);
+}
 
 // ---------- 主用户菜单 ----------
 void userLoopInit() {
     int choice = 1;
     bool isAdmin = is_user_logged_in() && get_current_user()->is_admin;
-    int maxChoice = isAdmin ? 8 : 7;   // 增加一个选项
+    int maxChoice = isAdmin ? 9 : 8;   // 增加一个选项
 
     while (true) {
         printfWhileBkgBoolAutoEnter(choice == 1, "1. 开始监测");
         printfWhileBkgBoolAutoEnter(choice == 2, "2. 查看历史数据");
         printfWhileBkgBoolAutoEnter(choice == 3, "3. 修改历史数据");
         printfWhileBkgBoolAutoEnter(choice == 4, "4. 删除历史数据");
-        printfWhileBkgBoolAutoEnter(choice == 5, "5. 查看统计数据");
-        printfWhileBkgBoolAutoEnter(choice == 6, "6. 修改密码");          // 新增
+        printfWhileBkgBoolAutoEnter(choice == 5, "5. 添加历史数据");
+        printfWhileBkgBoolAutoEnter(choice == 6, "6. 查看统计数据");
+        printfWhileBkgBoolAutoEnter(choice == 7, "7. 修改密码");          // 新增
         if (isAdmin)
-            printfWhileBkgBoolAutoEnter(choice == 7, "7. 用户管理");       // 管理员选项后移
-        printfWhileBkgBoolAutoEnter(choice == maxChoice, isAdmin ? "8. 退出并保存" : "7. 退出并保存");
+            printfWhileBkgBoolAutoEnter(choice == 8, "8. 用户管理");       // 管理员选项后移
+        printfWhileBkgBoolAutoEnter(choice == maxChoice, isAdmin ? "9. 退出并保存" : "8. 退出并保存");
 
         enum KeyType key = waitForAnyKey(3, UP, DOWN, ENTER);
         clearScreen();
@@ -862,9 +979,10 @@ void userLoopInit() {
                 else if (choice == 2) seeHistoryRecord();
                 else if (choice == 3) editHistoryRecord();
                 else if (choice == 4) delHistoryRecord();
-                else if (choice == 5) seeStatistics();
-                else if (choice == 6) changePassword();                  // 新增
-                else if (choice == 7 && isAdmin) manageUsers();          // 管理员选项
+                else if (choice == 5) addHistoryRecord();
+                else if (choice == 6) seeStatistics();
+                else if (choice == 7) changePassword();
+                else if (choice == 8 && isAdmin) manageUsers();          // 管理员选项
                 else if (choice == maxChoice) {
                     writeWaterQualityRecords(globalRecordList);
                     printDefaultAutoEnter("ByeBye!");
