@@ -4,7 +4,7 @@
 #include "array_list.h"
 #include "data.h"
 
-extern ArrayList globalRecordList;
+extern struct ArrayList* globalRecordList;
 
 // 品种阈值配置
 typedef struct {

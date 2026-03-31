@@ -16,9 +16,9 @@
 
 #define USER_FILE "users.txt"   /**< 存储用户数据的文件名 */
 
-static User current_user;       /**< 当前登录的用户信息（登录成功后填充） */
+static struct User current_user;       /**< 当前登录的用户信息（登录成功后填充） */
 static bool logged_in = false;  /**< 登录状态标志 */
-static ArrayList user_list = NULL; /**< 存储所有用户的动态数组（元素类型为 User*） */
+static struct ArrayList* user_list = NULL; /**< 存储所有用户的动态数组（元素类型为 User*） */
 
 /**
  * @brief 从控制台读取密码，不回显且以星号掩码显示，支持退格删除。
@@ -67,7 +67,7 @@ static void load_users() {
     FILE* f = fopen(USER_FILE, "r");
     if (!f) {
         // 文件不存在，创建默认管理员账户
-        User* admin = (User*)malloc(sizeof(User));
+        struct User* admin = (struct User*)malloc(sizeof(struct User));
         if (admin) {
             strcpy(admin->username, "admin");
             strcpy(admin->password, "123456");
@@ -85,7 +85,7 @@ static void load_users() {
             line[--len] = '\0';
         }
 
-        User* u = (User*)malloc(sizeof(User));
+        struct User* u = (struct User*)malloc(sizeof(struct User));
         if (!u) continue;  // 内存不足，跳过该行
 
         int admin_flag = 0;  // 临时变量，用于接收整数
@@ -113,7 +113,7 @@ void save_users() {
     FILE* f = fopen(USER_FILE, "w");
     if (!f) return;
     for (int i = 0; i < user_list->size; i++) {
-        User* u = (User*)getAList(user_list, i);
+        struct User* u = (struct User*)getAList(user_list, i);
         fprintf(f, "%s,%s,%d\n", u->username, u->password, u->is_admin);
         // fprintf(f, "%s, %s, %d\n", u->username, u->password, u->is_admin);
     }
@@ -126,9 +126,9 @@ void save_users() {
  * @param username 要查找的用户名
  * @return User* 指向找到的用户结构体的指针，若未找到返回 NULL。
  */
-static User* find_user(const char* username) {
+static struct User* find_user(const char* username) {
     for (int i = 0; i < user_list->size; i++) {
-        User* u = (User*)getAList(user_list, i);
+        struct User* u = (struct User*)getAList(user_list, i);
         if (strcmp(u->username, username) == 0) return u;
     }
     return NULL;
@@ -142,7 +142,7 @@ static User* find_user(const char* username) {
 void init_user_system() {
     load_users();
     logged_in = false;
-    memset(&current_user, 0, sizeof(User));
+    memset(&current_user, 0, sizeof(struct User));
 }
 
 /**
@@ -179,7 +179,7 @@ bool user_login_loop() {
                     char pwd[50];
                     get_password(pwd, 50);
 
-                    User* u = find_user(name);
+                    struct User* u = find_user(name);
                     if (u && strcmp(u->password, pwd) == 0) {
                         current_user = *u;   // 保存当前登录用户信息
                         logged_in = true;
@@ -230,7 +230,7 @@ bool user_login_loop() {
                     get_password(pwd, 50);
 
                     // 创建新用户
-                    User* nu = (User*)malloc(sizeof(User));
+                    struct User* nu = (struct User*)malloc(sizeof(struct User));
                     strcpy(nu->username, name);
                     nu->is_admin = false;
                     addAList(user_list, nu);
@@ -255,7 +255,7 @@ bool user_login_loop() {
  *
  * @return User* 若已登录返回指向 current_user 的指针，否则返回 NULL。
  */
-User* get_current_user() {
+struct User* get_current_user() {
     return logged_in ? &current_user : NULL;
 }
 
@@ -274,7 +274,7 @@ bool is_user_logged_in() {
  */
 void user_logout() {
     logged_in = false;
-    memset(&current_user, 0, sizeof(User));
+    memset(&current_user, 0, sizeof(struct User));
 }
 
 /**
@@ -282,7 +282,7 @@ void user_logout() {
  *
  * @return ArrayList 包含所有 User* 的列表。
  */
-ArrayList get_all_users() {
+struct ArrayList* get_all_users() {
     return user_list;
 }
 
@@ -301,7 +301,7 @@ bool delete_user_by_username(const char* username) {
     if (strcmp(current_user.username, username) == 0) return false; // 不能删除自己
 
     for (int i = 0; i < user_list->size; i++) {
-        User* u = (User*)getAList(user_list, i);
+        struct User* u = (struct User*)getAList(user_list, i);
         if (strcmp(u->username, username) == 0) {
             free(u);                           // 释放用户结构体内存
             removeAList(user_list, i);          // 从列表中移除指针
@@ -334,7 +334,7 @@ bool change_password(const char* old_pwd, const char* new_pwd) {
 
     // 4. 同步更新 user_list 中对应条目的密码
     for (int i = 0; i < user_list->size; i++) {
-        User* u = (User*)getAList(user_list, i);
+        struct User* u = (struct User*)getAList(user_list, i);
         if (strcmp(u->username, current_user.username) == 0) {
             strcpy(u->password, new_pwd);
             break;

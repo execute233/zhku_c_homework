@@ -480,8 +480,8 @@ int quickJump(int cursorX, bool jumpLeft) {
     return cursorX + 1;
 
 }
-ArrayList cpyAList(ArrayList list, int startIndex, int len) {
-    ArrayList result = createAList(len);
+struct ArrayList* cpyAList(struct ArrayList* list, int startIndex, int len) {
+    struct ArrayList* result = createAList(len);
     for (int i = startIndex; i < startIndex + len; i++) {
         char* str = malloc(sizeof(char) * 128);
         struct WaterQuality * quality = getAList(list, i);
@@ -491,8 +491,8 @@ ArrayList cpyAList(ArrayList list, int startIndex, int len) {
     return result;
 }
 // 确认编辑的信息，并检查
-bool confirmEdit(ArrayList list, int index) {
-    ArrayList qualityList = createAList(list->size);
+bool confirmEdit(struct ArrayList* list, int index) {
+    struct ArrayList* qualityList = createAList(list->size);
     for (int i = 0; i < list->size; i++) {
         char* str = getAList(list, i);
         struct WaterQuality* quality = malloc(sizeof(struct WaterQuality));
@@ -568,7 +568,7 @@ void editHistoryRecord() {
     // 一些数值定义的相对位置范围[]
     bool edit = false;
     // 缓存当前页的数据用于修改
-    ArrayList bufList = createAList(showRowsCount);
+    struct ArrayList* bufList = createAList(showRowsCount);
     while (true) {
         if (edit) {
             printf(SHOW_CURSOR);
@@ -765,7 +765,7 @@ void manageUsers() {
         return;
     }
 
-    ArrayList users = get_all_users();
+    struct ArrayList* users = get_all_users();
     if (!users || users->size == 0) {
         printDefaultAutoEnter("暂无用户！");
         Sleep(1500);
@@ -788,7 +788,7 @@ void manageUsers() {
         if (row > maxRow) row = maxRow;
 
         for (int i = start, cur = 0; i <= end; i++, cur++) {
-            User* u = (User*)getAList(users, i);
+            struct User* u = (struct User*)getAList(users, i);
             char line[128];
             sprintf(line, "%s\t\t%s\t%s", u->username,
                     u->is_admin ? "是" : "否",
@@ -802,7 +802,7 @@ void manageUsers() {
         switch (key) {
             case DEL: {
                 int idx = start + row;
-                User* u = (User*)getAList(users, idx);
+                struct User* u = (struct User*)getAList(users, idx);
                 if (strcmp(u->username, get_current_user()->username) == 0) {
                     printDefaultAutoEnter("不能删除当前登录用户！");
                     Sleep(1500);
@@ -835,7 +835,7 @@ void manageUsers() {
 }
 void addHistoryRecord() {
     struct WaterQuality* quality = malloc(sizeof(struct WaterQuality));
-    DataRestriction restriction = penaeusVannameiValidData;
+    struct DataRestriction* restriction = penaeusVannameiValidData;
     if (mode == MICROPTERUS_SALMOIDES) {
         restriction = micropterusSalmoidesValidData;
     } else if (mode == PENAEUS_VANNAMEI) {

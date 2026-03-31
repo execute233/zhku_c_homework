@@ -13,7 +13,7 @@ const char* RECORD_FILE_NAME = "records.txt";
 const char* RESTRICTION_FILE_NAME = "species.txt";
 
 // 写入到文件，如果文件存在则会清空内容写入
-void writeWaterQualityRecords(ArrayList list) {
+void writeWaterQualityRecords(struct ArrayList* list) {
     FILE* f = fopen(RECORD_FILE_NAME, "w");
     for (int i = 0; i < list->size; i++) {
         struct WaterQuality * quality = getAList(list, i);
@@ -24,9 +24,9 @@ void writeWaterQualityRecords(ArrayList list) {
     fclose(f);
 }
 // 读取文件，构建为ArrayList
-ArrayList readWaterQualityRecords() {
+struct ArrayList* readWaterQualityRecords() {
     FILE* f = fopen(RECORD_FILE_NAME, "r");
-    ArrayList list = createAListDefault();
+    struct ArrayList* list = createAListDefault();
     while (true) {
         struct WaterQuality * quality = malloc(sizeof(struct WaterQuality));
         char timeRight[11];
@@ -49,21 +49,21 @@ ArrayList readWaterQualityRecords() {
 }
 
 void readRestrictionData() {
-    penaeusVannameiNormalData = (DataRestriction)malloc(sizeof(struct DataRestriction));
-    penaeusVannameiSeriousData = (DataRestriction)malloc(sizeof(struct DataRestriction));
-    penaeusVannameiValidData = (DataRestriction)malloc(sizeof(struct DataRestriction));
-    micropterusSalmoidesNormalData = (DataRestriction)malloc(sizeof(struct DataRestriction));
-    micropterusSalmoidesSeriousData = (DataRestriction)malloc(sizeof(struct DataRestriction));
-    micropterusSalmoidesValidData = (DataRestriction)malloc(sizeof(struct DataRestriction));
-    crassostreaGigasNormalData = (DataRestriction)malloc(sizeof(struct DataRestriction));
-    crassostreaGigasSeriousData = (DataRestriction)malloc(sizeof(struct DataRestriction));
-    crassostreaGigasValidData = (DataRestriction)malloc(sizeof(struct DataRestriction));
+    penaeusVannameiNormalData = (struct DataRestriction*)malloc(sizeof(struct DataRestriction));
+    penaeusVannameiSeriousData = (struct DataRestriction*)malloc(sizeof(struct DataRestriction));
+    penaeusVannameiValidData = (struct DataRestriction*)malloc(sizeof(struct DataRestriction));
+    micropterusSalmoidesNormalData = (struct DataRestriction*)malloc(sizeof(struct DataRestriction));
+    micropterusSalmoidesSeriousData = (struct DataRestriction*)malloc(sizeof(struct DataRestriction));
+    micropterusSalmoidesValidData = (struct DataRestriction*)malloc(sizeof(struct DataRestriction));
+    crassostreaGigasNormalData = (struct DataRestriction*)malloc(sizeof(struct DataRestriction));
+    crassostreaGigasSeriousData = (struct DataRestriction*)malloc(sizeof(struct DataRestriction));
+    crassostreaGigasValidData = (struct DataRestriction*)malloc(sizeof(struct DataRestriction));
 
     FILE* f = fopen(RESTRICTION_FILE_NAME, "r");
 
     char name[50], type[20], buf[256], line[256];
     double values[8];
-    DataRestriction target = NULL;
+    struct DataRestriction* target = NULL;
     while (fgets(buf, sizeof(buf), f) != NULL) {
         // 移除行尾的换行符
         size_t len = strlen(buf);
@@ -131,11 +131,11 @@ void generateTimeStr(char* timeBuf, time_t baseTime, int index) {
 struct ArrayList* generateRandomWaterQualityData(int count, enum Mode mode) {
     time_t now = time(NULL);
 
-    ArrayList list = createAList(count);
+    struct ArrayList* list = createAList(count);
 
-    DataRestriction normal = NULL;
-    DataRestriction normalAlert = NULL;
-    DataRestriction seriousAlert = NULL;
+    struct DataRestriction* normal = NULL;
+    struct DataRestriction* normalAlert = NULL;
+    struct DataRestriction* seriousAlert = NULL;
     if (mode == PENAEUS_VANNAMEI) {
         normal = penaeusVannameiNormalData;
         normalAlert = penaeusVannameiSeriousData;

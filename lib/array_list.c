@@ -2,11 +2,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-ArrayList createAListDefault() {
+struct ArrayList* createAListDefault() {
     return createAList(10);
 }
-ArrayList createAList(int capacity) {
-    ArrayList list = malloc(sizeof(ArrayList));
+struct ArrayList* createAList(int capacity) {
+    struct ArrayList* list = malloc(sizeof(struct ArrayList));
     list->capacity = capacity;
     list->size = 0;
     list->array = malloc(sizeof(void*) * capacity);
@@ -17,7 +17,7 @@ ArrayList createAList(int capacity) {
 * 检查ArrayList是否需要扩容，如果需要就扩容
 * 能跑就别乱动，乱搞内存会炸Boom！！！
 **/
-static void checkSizeOrResize(ArrayList alist) {
+static void checkSizeOrResize(struct ArrayList* alist) {
     if (alist->size >= alist->capacity) {
         int newCapacity = (alist->capacity >> 1) + alist->capacity;
         // 为什么不用realloc?你会你可以用
@@ -30,14 +30,14 @@ static void checkSizeOrResize(ArrayList alist) {
         alist->capacity = newCapacity;
     }
 }
-int addAList(ArrayList alist, void * element) {
+int addAList(struct ArrayList* alist, void * element) {
     checkSizeOrResize(alist);
     int addIndex = alist->size;
     *(alist->array + addIndex) = element;
     alist->size++;
     return addIndex;
 }
-bool insertAList(ArrayList alist,void * element, int index) {
+bool insertAList(struct ArrayList* alist,void * element, int index) {
     if (index < 0 || index > alist->size) return false;
     checkSizeOrResize(alist);
     for (int i = alist->size; i > index; i--) {
@@ -47,7 +47,7 @@ bool insertAList(ArrayList alist,void * element, int index) {
     *(alist->array + index) = element;
     return true;
 }
-bool removeAList(ArrayList alist, int index) {
+bool removeAList(struct ArrayList* alist, int index) {
     if (alist == NULL || index < 0 || index >= alist->size) return false;
     for (int i = index + 1; i < alist->size; i++, index++) {
         *(alist->array + index) = *(alist->array + i);
@@ -55,7 +55,7 @@ bool removeAList(ArrayList alist, int index) {
     alist->size--;
     return true;
 }
-_Bool removeAListRls(ArrayList alist, int index) {
+_Bool removeAListRls(struct ArrayList* alist, int index) {
     if (alist == NULL || index < 0 || index >= alist->size) return false;
     free(*(alist->array + index));
     for (int i = index + 1; i < alist->size; i++, index++) {
@@ -64,18 +64,18 @@ _Bool removeAListRls(ArrayList alist, int index) {
     alist->size--;
     return true;
 }
-bool removeAListByPtr(ArrayList alist, void * element) {
+bool removeAListByPtr(struct ArrayList* alist, void * element) {
     if (alist == NULL || element == NULL) return false;
     int index = findAListByPtr(alist, element);
     return index < 0 ? false: removeAList(alist, index);
 }
-void* replaceAList(ArrayList alist, int index, void* newElement) {
+void* replaceAList(struct ArrayList* alist, int index, void* newElement) {
     if (index < 0 || index >= alist->size) return NULL;
     void* oldPtr = *(alist->array + index);
     *(alist->array + index) = newElement;
     return oldPtr;
 }
-bool replaceAListRls(ArrayList alist, int index, void * newElement) {
+bool replaceAListRls(struct ArrayList* alist, int index, void * newElement) {
     void* oldPtr = NULL;
     if ((oldPtr = *(alist->array + index)) == NULL) {
         return false;
@@ -84,7 +84,7 @@ bool replaceAListRls(ArrayList alist, int index, void * newElement) {
     *(alist->array + index) = newElement;
     return true;
 }
-int findAListByPtr(ArrayList alist, void * element) {
+int findAListByPtr(struct ArrayList* alist, void * element) {
     int index = -1;
     for (int i = 0; i < alist->size; i++) {
         if (*(alist->array + i) == element) {
@@ -94,7 +94,7 @@ int findAListByPtr(ArrayList alist, void * element) {
     }
     return index;
 }
-int findAListByCmp(ArrayList alist, _Bool compare(void*, void*), void * element) {
+int findAListByCmp(struct ArrayList* alist, _Bool compare(void*, void*), void * element) {
     int index = -1;
     for (int i = 0; i < alist->size; i++) {
         if (compare(*(alist->array + i), element)) {
@@ -104,34 +104,34 @@ int findAListByCmp(ArrayList alist, _Bool compare(void*, void*), void * element)
     }
     return index;
 }
-void* getAList(ArrayList alist, int index) {
+void* getAList(struct ArrayList* alist, int index) {
     if (alist == NULL || index < 0 || index >= alist->size) return NULL;
     return *(alist->array + index);
 }
-void clearAList(ArrayList alist) {
+void clearAList(struct ArrayList* alist) {
     if (alist == NULL) return;
     alist->size = 0;
 }
-void clearAListRls(ArrayList alist) {
+void clearAListRls(struct ArrayList* alist) {
     if (alist == NULL) return;
     for (int i = 0; i < alist->size; i++) {
         free(*(alist->array + i));
     }
     alist->size = 0;
 }
-void destroyAList(ArrayList alist) {
+void destroyAList(struct ArrayList* alist) {
     if (alist == NULL) return;
     free(alist->array);
     free(alist);
 }
-void destroyAListRls(ArrayList alist) {
+void destroyAListRls(struct ArrayList* alist) {
     if (alist == NULL) return;
     for (int i = 0; i < alist->size; i++) {
         free(*(alist->array + i));
     }
     destroyAList(alist);
 }
-void forEachAList(ArrayList alist, void forEach(void * element)) {
+void forEachAList(struct ArrayList* alist, void forEach(void * element)) {
     if (alist == NULL) return;
     for (int i = 0; i < alist->size; i++) {
         forEach(*(alist->array + i));
@@ -175,7 +175,7 @@ static void mergeSort(void** array, void** temp, int left, int right, _Bool esc,
     // 合并两个有序数组
     merge(array, temp, left, mid, right, esc, compare);
 }
-void sort(ArrayList alist, _Bool esc, int compare(void*, void*)) {
+void sort(struct ArrayList* alist, _Bool esc, int compare(void*, void*)) {
     if (alist == NULL || alist->size <= 1 || compare == NULL) return;
     // 由于数据量较大，使用归并排序
     // 分配临时数组
@@ -185,7 +185,7 @@ void sort(ArrayList alist, _Bool esc, int compare(void*, void*)) {
     mergeSort(alist->array, temp, 0, alist->size - 1, esc, compare);
     free(temp);
 }
-void* getMax(ArrayList alist, int compare(void*, void*)) {
+void* getMax(struct ArrayList* alist, int compare(void*, void*)) {
     if (alist == NULL || alist->size < 1 || compare == NULL) return NULL;
     if (alist->size == 1) return *(alist->array);
     int maxIndex = 0;

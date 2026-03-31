@@ -2,23 +2,23 @@
 #include <stddef.h>
 #include <math.h>
 // 南美白对虾的一般警告范围
-DataRestriction penaeusVannameiNormalData = NULL;
+struct DataRestriction* penaeusVannameiNormalData = NULL;
 // 南美白对虾的严重警告范围
-DataRestriction penaeusVannameiSeriousData = NULL;
+struct DataRestriction* penaeusVannameiSeriousData = NULL;
 // 南美白对虾的数据校验范围
-DataRestriction penaeusVannameiValidData = NULL;
+struct DataRestriction* penaeusVannameiValidData = NULL;
 // 大口黑鲈的一般警告范围
-DataRestriction micropterusSalmoidesNormalData = NULL;
+struct DataRestriction* micropterusSalmoidesNormalData = NULL;
 // 大口黑鲈的严重警告范围
-DataRestriction micropterusSalmoidesSeriousData = NULL;
+struct DataRestriction* micropterusSalmoidesSeriousData = NULL;
 // 大口黑鲈的数据校验范围
-DataRestriction micropterusSalmoidesValidData = NULL;
+struct DataRestriction* micropterusSalmoidesValidData = NULL;
 // 南奥牡蛎的一般警告范围
-DataRestriction crassostreaGigasNormalData = NULL;
+struct DataRestriction* crassostreaGigasNormalData = NULL;
 // 南奥牡蛎的严重警告范围
-DataRestriction crassostreaGigasSeriousData = NULL;
+struct DataRestriction* crassostreaGigasSeriousData = NULL;
 // 南奥牡蛎的数据校验范围
-DataRestriction crassostreaGigasValidData = NULL;
+struct DataRestriction* crassostreaGigasValidData = NULL;
 // 保留 n 位小数的通用公式
 double round_to_n_decimals(double value, int n) {
     double factor = pow(10, n);
@@ -42,8 +42,8 @@ enum RestrictionType checkCrassostreaGigasData(struct WaterQuality * data) {
         , crassostreaGigasSeriousData, crassostreaGigasValidData);
 }
 // 通用数据校验方法
-static enum RestrictionType checkData(struct WaterQuality * data, DataRestriction normal
-    , DataRestriction serious, DataRestriction valid) {
+static enum RestrictionType checkData(struct WaterQuality * data, struct DataRestriction* normal
+    , struct DataRestriction* serious, struct DataRestriction* valid) {
     if (data->tmp >= normal->minTmp && data->tmp <= normal->maxTmp
         && data->doxygen >= normal->minDoxygen && data->doxygen <= normal->maxDoxygen
         && data->ph >= normal->minPh && data->ph <= normal->maxPh
@@ -64,7 +64,7 @@ static enum RestrictionType checkData(struct WaterQuality * data, DataRestrictio
     }
     return INVALID_DATA;
 }
-int checkFelid(struct WaterQuality* quality, enum WaterQualityEnum field, DataRestriction restriction) {
+int checkFelid(struct WaterQuality* quality, enum WaterQualityEnum field, struct DataRestriction* restriction) {
     if (field == TMP) {
         return checkFelidValue(quality->tmp, TMP, restriction);
     }
@@ -79,7 +79,7 @@ int checkFelid(struct WaterQuality* quality, enum WaterQualityEnum field, DataRe
     }
     return 0;
 }
-int checkFelidValue(double value, enum WaterQualityEnum field, DataRestriction restriction) {
+int checkFelidValue(double value, enum WaterQualityEnum field, struct DataRestriction* restriction) {
     int result = 0;
     if (field == TMP) {
         if (value > restriction->maxTmp) result = (int) ((value - restriction->maxTmp) * 10000);

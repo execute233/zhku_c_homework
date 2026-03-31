@@ -8,7 +8,7 @@
 // 当数据在严重警告范围内时，但不在一般警告范围内，处于一般警告状态
 // 当数据超出严重警告范围时，但数据在合法范围内，处于严重警告状态
 // 当数据超出了其校验范围时，该数据应当丢弃，因为数据不合法
-typedef struct DataRestriction {
+struct DataRestriction {
     double minTmp; // 最小温度
     double maxTmp; // 最大温度
     double minDoxygen; // 最小悬浮氧
@@ -17,7 +17,7 @@ typedef struct DataRestriction {
     double maxPh; // 最大ph
     double minAmmonia; // 最小氨氮
     double maxAmmonia; // 最大氨氮
-} * DataRestriction;
+};
 // 用于指示数据的警告范围、或者数据是否合法
 enum RestrictionType {
     NORMAL, // 正常
@@ -31,23 +31,23 @@ enum RestrictionType {
  * < NormalData < 一般警告 < SeriousData < 严重警告 < ValidaData < 非法数据
  ***/
 // 南美白对虾的一般警告范围
-extern DataRestriction penaeusVannameiNormalData;
+extern struct DataRestriction* penaeusVannameiNormalData;
 // 南美白对虾的严重警告范围
-extern DataRestriction penaeusVannameiSeriousData;
+extern struct DataRestriction* penaeusVannameiSeriousData;
 // 南美白对虾的数据校验范围
-extern DataRestriction penaeusVannameiValidData;
+extern struct DataRestriction* penaeusVannameiValidData;
 // 大口黑鲈的一般警告范围
-extern DataRestriction micropterusSalmoidesNormalData;
+extern struct DataRestriction* micropterusSalmoidesNormalData;
 // 大口黑鲈的严重警告范围
-extern DataRestriction micropterusSalmoidesSeriousData;
+extern struct DataRestriction* micropterusSalmoidesSeriousData;
 // 大口黑鲈的数据校验范围
-extern DataRestriction micropterusSalmoidesValidData;
+extern struct DataRestriction* micropterusSalmoidesValidData;
 // 南奥牡蛎的一般警告范围
-extern DataRestriction crassostreaGigasNormalData;
+extern struct DataRestriction* crassostreaGigasNormalData;
 // 南奥牡蛎的严重警告范围
-extern DataRestriction crassostreaGigasSeriousData;
+extern struct DataRestriction* crassostreaGigasSeriousData;
 // 南奥牡蛎的数据校验范围
-extern DataRestriction crassostreaGigasValidData;
+extern struct DataRestriction* crassostreaGigasValidData;
 // 用于校验南美白对虾的数据
 enum RestrictionType checkPenaeusVannameiData(struct WaterQuality * data);
 // 用于校验大口黑鲈的数据
@@ -55,10 +55,10 @@ enum RestrictionType checkMicropterusSalmoidesData(struct WaterQuality * data);
 // 用于校验南奥牡蛎的数据
 enum RestrictionType checkCrassostreaGigasData(struct WaterQuality * data);
 // 通用数据校验方法
-static enum RestrictionType checkData(struct WaterQuality * data, DataRestriction normal
-    , DataRestriction serious, DataRestriction valid);
+static enum RestrictionType checkData(struct WaterQuality * data, struct DataRestriction* normal
+    , struct DataRestriction* serious, struct DataRestriction* valid);
 // 校验字段，符合标准时返回0，小于标准时<0，大于标准时返回>0
-int checkFelid(struct WaterQuality* quality, enum WaterQualityEnum field, DataRestriction restriction);
-int checkFelidValue(double value, enum WaterQualityEnum field, DataRestriction restriction);
+int checkFelid(struct WaterQuality* quality, enum WaterQualityEnum field, struct DataRestriction* restriction);
+int checkFelidValue(double value, enum WaterQualityEnum field, struct DataRestriction* restriction);
 
 #endif
