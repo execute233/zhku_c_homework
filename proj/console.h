@@ -2,8 +2,8 @@
 #define CONSOLE_H
 #include "../lib/array_list.h"
 #include "data.h"
-#include <stdbool.h>
-
+extern struct ArrayList* globalRecordList;
+extern enum Mode mode;
 // 指示选择的养殖类型
 enum Mode {
     PENAEUS_VANNAMEI, // 南美对白虾
@@ -16,16 +16,13 @@ enum KeyType {
     UP, DOWN, LEFT, RIGHT, ENTER, BACKSPACE, DEL, SPACE, ESC
 };
 
-extern struct ArrayList* globalRecordList;
-extern enum Mode mode;
-
+enum KeyType waitForKey();
+enum KeyType waitForAnyKey(int count, ...);
 void initTerminal();
 void exitTerminal();
 int kbhit();
 int getKey();
-enum KeyType waitForKey();
 void waitForRightKey(enum KeyType type);
-enum KeyType waitForAnyKey(int count, ...);
 int getVisibleRows();
 void printDefaultAutoEnter(char* format, ...);
 void printfWhiteBkgAutoEnter(char* format, ...);
@@ -34,11 +31,9 @@ void clearScreen();
 void gotoxy(int x, int y);
 void printWaterQualityAutoEnter(struct WaterQuality* q);
 void printWaterQualityWhileBkgAutoEnter(struct WaterQuality* q);
-
 void chooseModeInit();
 void userLoopInit();
 void initConsole();
-
 void seeHistoryRecord();
 void editHistoryRecord();
 void delHistoryRecord();
@@ -46,8 +41,6 @@ void addHistoryRecord();
 void watchInit();
 void seeStatistics();
 void manageUsers();
-
-//新增
 void changePassword();
 static void input_password(char* pwd, int max_len);
 
