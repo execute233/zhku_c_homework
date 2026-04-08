@@ -308,15 +308,15 @@ void chooseModeInit() {
                 switch (choose) {
                 case 1:
                         mode = PENAEUS_VANNAMEI;
-                        show_warning_after_login(1);
+                        showWarningAfterLogin(1);
                         break;
                 case 2:
                         mode = MICROPTERUS_SALMOIDES;
-                        show_warning_after_login(2);
+                        showWarningAfterLogin(2);
                         break;
                 case 3:
                         mode = CRASSOSTRA_GIGAS;
-                        show_warning_after_login(3);
+                        showWarningAfterLogin(3);
                         break;
                 default:
                         continue;
@@ -759,13 +759,13 @@ void watchInit() {
 
 // ---------- 用户管理界面（仅管理员）----------
 void manageUsers() {
-    if (!is_user_logged_in() || !get_current_user()->is_admin) {
+    if (!isUserLggedIn() || !getCurrentUser()->is_admin) {
         printDefaultAutoEnter("无权限！");
         Sleep(1500);
         return;
     }
 
-    struct ArrayList* users = get_all_users();
+    struct ArrayList* users = getAllUsers();
     if (!users || users->size == 0) {
         printDefaultAutoEnter("暂无用户！");
         Sleep(1500);
@@ -792,7 +792,7 @@ void manageUsers() {
             char line[128];
             sprintf(line, "%s\t\t%s\t%s", u->username,
                     u->is_admin ? "是" : "否",
-                    (strcmp(u->username, get_current_user()->username) == 0) ? "当前用户" : "");
+                    (strcmp(u->username, getCurrentUser()->username) == 0) ? "当前用户" : "");
             if (cur == row) printfWhiteBkgAutoEnter(line);
             else printDefaultAutoEnter(line);
         }
@@ -803,7 +803,7 @@ void manageUsers() {
             case DEL: {
                 int idx = start + row;
                 struct User* u = (struct User*)getAList(users, idx);
-                if (strcmp(u->username, get_current_user()->username) == 0) {
+                if (strcmp(u->username, getCurrentUser()->username) == 0) {
                     printDefaultAutoEnter("不能删除当前登录用户！");
                     Sleep(1500);
                     break;
@@ -811,7 +811,7 @@ void manageUsers() {
                 clearScreen();
                 printf("确认删除 %s？(y/n)\n", u->username);
                 if (_getch() == 'y' || _getch() == 'Y') {
-                    if (delete_user_by_username(u->username)) {
+                    if (deleteUserByUsername(u->username)) {
                         printDefaultAutoEnter("删除成功！");
                         maxPage = (users->size - 1) / rows;
                         if (page > maxPage) page = maxPage;
@@ -850,7 +850,7 @@ void addHistoryRecord() {
     
     clearScreen();
     printDefaultAutoEnter("请输入水温（度）:");
-    if (scanf("%lf", &quality->tmp) != 1 || checkFelidValue(quality->tmp, TMP, restriction)) {
+    if (scanf("%lf", &quality->tmp) != 1 || checkFieldValue(quality->tmp, TMP, restriction)) {
         printDefaultAutoEnter("输入无效！");
         free(quality);
         Sleep(1500);
@@ -858,7 +858,7 @@ void addHistoryRecord() {
     }
     
     printDefaultAutoEnter("请输入溶解氧 (mg/L):");
-    if (scanf("%lf", &quality->doxygen) != 1 || checkFelidValue(quality->doxygen, DOXYGEN, restriction)) {
+    if (scanf("%lf", &quality->doxygen) != 1 || checkFieldValue(quality->doxygen, DOXYGEN, restriction)) {
         printDefaultAutoEnter("输入无效！");
         free(quality);
         Sleep(1500);
@@ -866,7 +866,7 @@ void addHistoryRecord() {
     }
     
     printDefaultAutoEnter("请输入PH值:");
-    if (scanf("%lf", &quality->ph) != 1 || checkFelidValue(quality->ph, PH, restriction)) {
+    if (scanf("%lf", &quality->ph) != 1 || checkFieldValue(quality->ph, PH, restriction)) {
         printDefaultAutoEnter("输入无效！");
         free(quality);
         Sleep(1500);
@@ -874,7 +874,7 @@ void addHistoryRecord() {
     }
     
     printDefaultAutoEnter("请输入氨氮含量:");
-    if (scanf("%lf", &quality->ammonia) != 1 || checkFelidValue(quality->ammonia, AMMONIA, restriction)) {
+    if (scanf("%lf", &quality->ammonia) != 1 || checkFieldValue(quality->ammonia, AMMONIA, restriction)) {
         printDefaultAutoEnter("输入无效！");
         free(quality);
         Sleep(1500);
@@ -953,7 +953,7 @@ void addHistoryRecord() {
 // ---------- 主用户菜单 ----------
 void userLoopInit() {
     int choice = 1;
-    bool isAdmin = is_user_logged_in() && get_current_user()->is_admin;
+    bool isAdmin = isUserLggedIn() && getCurrentUser()->is_admin;
     int maxChoice = isAdmin ? 9 : 8;   // 增加一个选项
 
     while (true) {
@@ -981,7 +981,7 @@ void userLoopInit() {
                 else if (choice == 4) delHistoryRecord();
                 else if (choice == 5) addHistoryRecord();
                 else if (choice == 6) seeStatistics();
-                else if (choice == 7) changePassword();
+                else if (choice == 7) changePasswordUI();
                 else if (choice == 8 && isAdmin) manageUsers();          // 管理员选项
                 else if (choice == maxChoice) {
                     writeWaterQualityRecords(globalRecordList);
@@ -996,7 +996,7 @@ void userLoopInit() {
     }
 }
 //新增
-static void input_password(char* pwd, int max_len) {
+static void inputPassword(char* pwd, int max_len) {
     int i = 0;
     char ch;
     while ((ch = _getch()) != '\r' && i < max_len - 1) {
@@ -1013,8 +1013,8 @@ static void input_password(char* pwd, int max_len) {
     pwd[i] = '\0';
     printf("\n");
 }
-void changePassword() {
-    if (!is_user_logged_in()) {
+void changePasswordUI() {
+    if (!isUserLggedIn()) {
         printDefaultAutoEnter("请先登录！");
         Sleep(1500);
         return;
@@ -1025,13 +1025,13 @@ void changePassword() {
     clearScreen();
     printDefaultAutoEnter("=== 修改密码 ===");
     printDefaultAutoEnter("请输入旧密码：");
-    input_password(old_pwd, 50);
+    inputPassword(old_pwd, 50);
 
     printDefaultAutoEnter("请输入新密码：");
-    input_password(new_pwd, 50);
+    inputPassword(new_pwd, 50);
 
     printDefaultAutoEnter("请再次输入新密码：");
-    input_password(confirm_pwd, 50);
+    inputPassword(confirm_pwd, 50);
 
     if (strcmp(new_pwd, confirm_pwd) != 0) {
         printDefaultAutoEnter("两次输入的新密码不一致！");
@@ -1039,7 +1039,7 @@ void changePassword() {
         return;
     }
 
-    if (change_password(old_pwd, new_pwd)) {
+    if (changePassword(old_pwd, new_pwd)) {
         printDefaultAutoEnter("密码修改成功！");
     } else {
         printDefaultAutoEnter("密码修改失败（旧密码错误）！");
@@ -1049,8 +1049,8 @@ void changePassword() {
 void initConsole() {
     globalRecordList = readWaterQualityRecords();
     initTerminal();
-    init_user_system();         // 初始化用户系统
-    if (!user_login_loop()) {   // 登录循环，若选择退出则结束
+    initUserSystem();         // 初始化用户系统
+    if (!userLoginLoop()) {   // 登录循环，若选择退出则结束
         printf("已退出系统。\n");
         return;
     }

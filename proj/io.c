@@ -195,9 +195,9 @@ struct ArrayList* generateRandomWaterQualityData(int count, enum Mode mode) {
         {
             double delta = randomInRange(-tmpChange, tmpChange);
             double lastTmp = lastQuality->tmp;
-            if (checkFelid(lastQuality, TMP, normal) == 0) {
+            if (checkField(lastQuality, TMP, normal) == 0) {
                 // 上一个是正常数据
-                if (checkFelidValue(lastTmp + delta, TMP, normal) == 0) {
+                if (checkFieldValue(lastTmp + delta, TMP, normal) == 0) {
                     // 说明这次生成的还是正常数据，否则是一般警告
                     quality->tmp = lastTmp + delta;
                 } else {
@@ -207,9 +207,9 @@ struct ArrayList* generateRandomWaterQualityData(int count, enum Mode mode) {
                         quality->tmp = lastTmp - delta;
                     }
                 }
-            } else if (checkFelid(lastQuality, TMP, normalAlert) == 0) {
+            } else if (checkField(lastQuality, TMP, normalAlert) == 0) {
                 // 上一个是一般警告
-                if (checkFelidValue(lastTmp + delta, TMP, normalAlert) == 0) {
+                if (checkFieldValue(lastTmp + delta, TMP, normalAlert) == 0) {
                     // 说明这次生成的还是一般警告数据，否则是严重警告
                     quality->tmp = lastTmp + delta;
                 } else {
@@ -219,11 +219,11 @@ struct ArrayList* generateRandomWaterQualityData(int count, enum Mode mode) {
                         quality->tmp = lastTmp - delta;
                     }
                 }
-            } else if (checkFelid(lastQuality, TMP, seriousAlert) == 0) {
+            } else if (checkField(lastQuality, TMP, seriousAlert) == 0) {
                 // 上一个是严重警告数据
-                if (checkFelidValue(lastTmp + delta, TMP, seriousAlert) == 0) {
+                if (checkFieldValue(lastTmp + delta, TMP, seriousAlert) == 0) {
                     // 说明这次生成的还是在严重警告之内，否则数据非法
-                    if (abs(checkFelidValue(lastTmp + delta, TMP, normal)) > abs(checkFelidValue(lastTmp - delta, TMP, normal))) {
+                    if (abs(checkFieldValue(lastTmp + delta, TMP, normal)) > abs(checkFieldValue(lastTmp - delta, TMP, normal))) {
                         // 说明前者离正常数据远
                         quality->tmp = randomBool(alphaTmp) ? lastTmp - delta : lastTmp + delta;
                     } else {
@@ -238,9 +238,9 @@ struct ArrayList* generateRandomWaterQualityData(int count, enum Mode mode) {
         {
             double delta = randomInRange(-doxygenChange, doxygenChange);
             double lastDoxygen = lastQuality->doxygen;
-            if (checkFelid(lastQuality, DOXYGEN, normal) == 0) {
+            if (checkField(lastQuality, DOXYGEN, normal) == 0) {
                 // 上一个是正常数据
-                if (checkFelidValue(lastDoxygen + delta, DOXYGEN, normal) == 0) {
+                if (checkFieldValue(lastDoxygen + delta, DOXYGEN, normal) == 0) {
                     // 说明这次生成的还是正常数据，否则是一般警告
                     quality->doxygen = lastDoxygen + delta;
                 } else {
@@ -250,9 +250,9 @@ struct ArrayList* generateRandomWaterQualityData(int count, enum Mode mode) {
                         quality->doxygen = lastDoxygen - delta;
                     }
                 }
-            } else if (checkFelid(lastQuality, DOXYGEN, normalAlert) == 0) {
+            } else if (checkField(lastQuality, DOXYGEN, normalAlert) == 0) {
                 // 上一个是一般警告
-                if (checkFelidValue(lastDoxygen + delta, DOXYGEN, normalAlert) == 0) {
+                if (checkFieldValue(lastDoxygen + delta, DOXYGEN, normalAlert) == 0) {
                     // 说明这次生成的还是一般警告数据，否则是严重警告
                     quality->doxygen = lastDoxygen + delta;
                 } else {
@@ -262,11 +262,11 @@ struct ArrayList* generateRandomWaterQualityData(int count, enum Mode mode) {
                         quality->doxygen = lastDoxygen - delta;
                     }
                 }
-            } else if (checkFelid(lastQuality, DOXYGEN, seriousAlert) == 0) {
+            } else if (checkField(lastQuality, DOXYGEN, seriousAlert) == 0) {
                 // 上一个是严重警告数据
-                if (checkFelidValue(lastDoxygen + delta, DOXYGEN, seriousAlert) == 0) {
+                if (checkFieldValue(lastDoxygen + delta, DOXYGEN, seriousAlert) == 0) {
                     // 说明这次生成的还是在严重警告之内，否则数据非法
-                    if (abs(checkFelidValue(lastDoxygen + delta, DOXYGEN, normal)) > abs(checkFelidValue(lastDoxygen - delta, DOXYGEN, normal))) {
+                    if (abs(checkFieldValue(lastDoxygen + delta, DOXYGEN, normal)) > abs(checkFieldValue(lastDoxygen - delta, DOXYGEN, normal))) {
                         // 说明前者离正常数据远
                         quality->doxygen = randomBool(alphaDoxygen) ? lastDoxygen - delta : lastDoxygen + delta;
                     } else {
@@ -281,9 +281,9 @@ struct ArrayList* generateRandomWaterQualityData(int count, enum Mode mode) {
         {
             double delta = randomInRange(-ammoniaChange, ammoniaChange);
             double lastAmmonia = lastQuality->ammonia;
-            if (checkFelid(lastQuality, AMMONIA, normal) == 0) {
+            if (checkField(lastQuality, AMMONIA, normal) == 0) {
                 // 上一个是正常数据
-                if (checkFelidValue(lastAmmonia + delta, AMMONIA, normal) == 0) {
+                if (checkFieldValue(lastAmmonia + delta, AMMONIA, normal) == 0) {
                     // 说明这次生成的还是正常数据，否则是一般警告
                     quality->ammonia = lastAmmonia + delta;
                 } else {
@@ -293,9 +293,9 @@ struct ArrayList* generateRandomWaterQualityData(int count, enum Mode mode) {
                         quality->ammonia = lastAmmonia - delta;
                     }
                 }
-            } else if (checkFelid(lastQuality, AMMONIA, normalAlert) == 0) {
+            } else if (checkField(lastQuality, AMMONIA, normalAlert) == 0) {
                 // 上一个是一般警告
-                if (checkFelidValue(lastAmmonia + delta, AMMONIA, normalAlert) == 0) {
+                if (checkFieldValue(lastAmmonia + delta, AMMONIA, normalAlert) == 0) {
                     // 说明这次生成的还是一般警告数据，否则是严重警告
                     quality->ammonia = lastAmmonia + delta;
                 } else {
@@ -305,11 +305,11 @@ struct ArrayList* generateRandomWaterQualityData(int count, enum Mode mode) {
                         quality->ammonia = lastAmmonia - delta;
                     }
                 }
-            } else if (checkFelid(lastQuality, AMMONIA, seriousAlert) == 0) {
+            } else if (checkField(lastQuality, AMMONIA, seriousAlert) == 0) {
                 // 上一个是严重警告数据
-                if (checkFelidValue(lastAmmonia + delta, AMMONIA, seriousAlert) == 0) {
+                if (checkFieldValue(lastAmmonia + delta, AMMONIA, seriousAlert) == 0) {
                     // 说明这次生成的还是在严重警告之内，否则数据非法
-                    if (abs(checkFelidValue(lastAmmonia + delta, AMMONIA, normal)) > abs(checkFelidValue(lastAmmonia - delta, AMMONIA, normal))) {
+                    if (abs(checkFieldValue(lastAmmonia + delta, AMMONIA, normal)) > abs(checkFieldValue(lastAmmonia - delta, AMMONIA, normal))) {
                         // 说明前者离正常数据远
                         quality->ammonia = randomBool(alphaAmmonia) ? lastAmmonia - delta : lastAmmonia + delta;
                     } else {
@@ -324,9 +324,9 @@ struct ArrayList* generateRandomWaterQualityData(int count, enum Mode mode) {
         {
             double delta = randomInRange(-phChange, phChange);
             double lastPh = lastQuality->ph;
-            if (checkFelid(lastQuality, PH, normal) == 0) {
+            if (checkField(lastQuality, PH, normal) == 0) {
                 // 上一个是正常数据
-                if (checkFelidValue(lastPh + delta, PH, normal) == 0) {
+                if (checkFieldValue(lastPh + delta, PH, normal) == 0) {
                     // 说明这次生成的还是正常数据，否则是一般警告
                     quality->ph = lastPh + delta;
                 } else {
@@ -336,9 +336,9 @@ struct ArrayList* generateRandomWaterQualityData(int count, enum Mode mode) {
                         quality->ph = lastPh - delta;
                     }
                 }
-            } else if (checkFelid(lastQuality, PH, normalAlert) == 0) {
+            } else if (checkField(lastQuality, PH, normalAlert) == 0) {
                 // 上一个是一般警告
-                if (checkFelidValue(lastPh + delta, PH, normalAlert) == 0) {
+                if (checkFieldValue(lastPh + delta, PH, normalAlert) == 0) {
                     // 说明这次生成的还是一般警告数据，否则是严重警告
                     quality->ph = lastPh + delta;
                 } else {
@@ -348,11 +348,11 @@ struct ArrayList* generateRandomWaterQualityData(int count, enum Mode mode) {
                         quality->ph = lastPh - delta;
                     }
                 }
-            } else if (checkFelid(lastQuality, PH, seriousAlert) == 0) {
+            } else if (checkField(lastQuality, PH, seriousAlert) == 0) {
                 // 上一个是严重警告数据
-                if (checkFelidValue(lastPh + delta, PH, seriousAlert) == 0) {
+                if (checkFieldValue(lastPh + delta, PH, seriousAlert) == 0) {
                     // 说明这次生成的还是在严重警告之内，否则数据非法
-                    if (abs(checkFelidValue(lastPh + delta, PH, normal)) > abs(checkFelidValue(lastPh - delta, PH, normal))) {
+                    if (abs(checkFieldValue(lastPh + delta, PH, normal)) > abs(checkFieldValue(lastPh - delta, PH, normal))) {
                         // 说明前者离正常数据远
                         quality->ph = randomBool(alphaPh) ? lastPh - delta : lastPh + delta;
                     } else {

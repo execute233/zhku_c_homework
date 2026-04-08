@@ -41,7 +41,7 @@ void addHistoryRecord();
 void watchInit();
 void seeStatistics();
 void manageUsers();
-void changePassword();
-static void input_password(char* pwd, int max_len);
+void changePasswordUI();
+static void inputPassword(char* pwd, int max_len);
 
 #endif

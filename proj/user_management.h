@@ -10,14 +10,14 @@ struct User {
     bool is_admin; // 是否为管理员
 };
 
-void init_user_system(); // 用户管理初始化
-bool user_login_loop(); // 登录循环
-struct User* get_current_user(); // 获取当前用户
-bool is_user_logged_in(); // 判断用户是否已登录
-void user_logout(); // 登出
-void save_users(); // 保存用户
-struct ArrayList* get_all_users(); // 获取所有用户
-bool delete_user_by_username(const char* username); // 删除用户
-bool change_password(const char* old_pwd, const char* new_pwd); // 修改密码
+void initUserSystem(); // 用户管理初始化
+bool userLoginLoop(); // 登录循环
+struct User* getCurrentUser(); // 获取当前用户
+bool isUserLggedIn(); // 判断用户是否已登录
+void userLogout(); // 登出
+void saveUsers(); // 保存用户
+struct ArrayList* getAllUsers(); // 获取所有用户
+bool deleteUserByUsername(const char* username); // 删除用户
+bool changePassword(const char* old_pwd, const char* new_pwd); // 修改密码
 
 #endif

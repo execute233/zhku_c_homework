@@ -58,7 +58,7 @@ enum RestrictionType checkCrassostreaGigasData(struct WaterQuality * data);
 static enum RestrictionType checkData(struct WaterQuality * data, struct DataRestriction* normal
     , struct DataRestriction* serious, struct DataRestriction* valid);
 // 校验字段，符合标准时返回0，小于标准时<0，大于标准时返回>0
-int checkFelid(struct WaterQuality* quality, enum WaterQualityEnum field, struct DataRestriction* restriction);
-int checkFelidValue(double value, enum WaterQualityEnum field, struct DataRestriction* restriction);
+int checkField(struct WaterQuality* quality, enum WaterQualityEnum field, struct DataRestriction* restriction);
+int checkFieldValue(double value, enum WaterQualityEnum field, struct DataRestriction* restriction);
 
 #endif

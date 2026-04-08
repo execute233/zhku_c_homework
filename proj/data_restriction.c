@@ -20,7 +20,7 @@ struct DataRestriction* crassostreaGigasSeriousData = NULL;
 // 南奥牡蛎的数据校验范围
 struct DataRestriction* crassostreaGigasValidData = NULL;
 // 保留 n 位小数的通用公式
-double round_to_n_decimals(double value, int n) {
+double roundToNDecimals(double value, int n) {
     double factor = pow(10, n);
     return round(value * factor) / factor;
 }
@@ -64,22 +64,22 @@ static enum RestrictionType checkData(struct WaterQuality * data, struct DataRes
     }
     return INVALID_DATA;
 }
-int checkFelid(struct WaterQuality* quality, enum WaterQualityEnum field, struct DataRestriction* restriction) {
+int checkField(struct WaterQuality* quality, enum WaterQualityEnum field, struct DataRestriction* restriction) {
     if (field == TMP) {
-        return checkFelidValue(quality->tmp, TMP, restriction);
+        return checkFieldValue(quality->tmp, TMP, restriction);
     }
     if (field == DOXYGEN) {
-        return checkFelidValue(quality->doxygen, DOXYGEN, restriction);
+        return checkFieldValue(quality->doxygen, DOXYGEN, restriction);
     }
     if (field == AMMONIA) {
-        return checkFelidValue(quality->ammonia, AMMONIA, restriction);
+        return checkFieldValue(quality->ammonia, AMMONIA, restriction);
     }
     if (field == PH) {
-        return checkFelidValue(quality->ph, PH, restriction);
+        return checkFieldValue(quality->ph, PH, restriction);
     }
     return 0;
 }
-int checkFelidValue(double value, enum WaterQualityEnum field, struct DataRestriction* restriction) {
+int checkFieldValue(double value, enum WaterQualityEnum field, struct DataRestriction* restriction) {
     int result = 0;
     if (field == TMP) {
         if (value > restriction->maxTmp) result = (int) ((value - restriction->maxTmp) * 10000);

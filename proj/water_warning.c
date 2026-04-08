@@ -24,7 +24,7 @@ typedef struct {
 } SpeciesConfig;
 
 // 获取品种配置（严格按你给的配置文件）
-static SpeciesConfig get_config(int mode) {
+static SpeciesConfig getConfig(int mode) {
     SpeciesConfig cfg;
     memset(&cfg, 0, sizeof(SpeciesConfig)); // 初始化清零，避免脏数据
 
@@ -81,30 +81,30 @@ static SpeciesConfig get_config(int mode) {
 }
 
 // 动态建议函数
-static const char* get_temp_suggestion(float val, SpeciesConfig cfg) {
+static const char* getTempSuggestion(float val, SpeciesConfig cfg) {
     if (val > cfg.temp_max) return "水温过高！请开启增氧+遮阳降温";
     if (val < cfg.temp_min) return "水温过低！请做好保温措施";
     return "水温正常，保持监测";
 }
 
-static const char* get_oxy_suggestion(float val, SpeciesConfig cfg) {
+static const char* getOxySuggestion(float val, SpeciesConfig cfg) {
     if (val < cfg.oxy_min) return "溶氧量严重不足！立即全开增氧机";
     if (val > cfg.oxy_max) return "溶氧量过高，适当降低曝气";
     return "溶氧量正常，保持监测";
 }
 
-static const char* get_ph_suggestion(float val, SpeciesConfig cfg) {
+static const char* getPhSuggestion(float val, SpeciesConfig cfg) {
     if (val > cfg.ph_max) return "pH偏高！少量投放降pH调节剂";
     if (val < cfg.ph_min) return "pH偏低！少量投放升pH调节剂";
     return "pH值正常，保持监测";
 }
 
-static const char* get_ammonia_suggestion(float val, SpeciesConfig cfg) {
+static const char* getAmmoniaSuggestion(float val, SpeciesConfig cfg) {
     if (val > cfg.ammonia_max) return "氨氮超标！立即换水30%+底改+增氧";
     return "氨氮正常，保持监测";
 }
 
-void show_warning_after_login(int mode)
+void showWarningAfterLogin(int mode)
 {
     if (globalRecordList == NULL || globalRecordList->size < 1) {
         printf("\n暂无水质数据！\n按回车继续...\n");
@@ -113,7 +113,7 @@ void show_warning_after_login(int mode)
     }
 
     struct WaterQuality *latest = (struct WaterQuality*)getAList(globalRecordList, globalRecordList->size - 1);
-    SpeciesConfig cfg = get_config(mode);
+    SpeciesConfig cfg = getConfig(mode);
 
     int severe = 0, general = 0, normal = 0;
 
@@ -179,7 +179,7 @@ void show_warning_after_login(int mode)
         printf("   状态：⚠️ 一般告警\n");
     else
         printf("   状态：✅ 正常\n");
-    printf("   建议：%s\n", get_temp_suggestion(latest->tmp, cfg));
+    printf("   建议：%s\n", getTempSuggestion(latest->tmp, cfg));
     printf("\n");
 
     // 溶氧量
@@ -191,7 +191,7 @@ void show_warning_after_login(int mode)
         printf("   状态：⚠️ 一般告警\n");
     else
         printf("   状态：✅ 正常\n");
-    printf("   建议：%s\n", get_oxy_suggestion(latest->doxygen, cfg));
+    printf("   建议：%s\n", getOxySuggestion(latest->doxygen, cfg));
     printf("\n");
 
     // pH
@@ -203,7 +203,7 @@ void show_warning_after_login(int mode)
         printf("   状态：⚠️ 一般告警\n");
     else
         printf("   状态：✅ 正常\n");
-    printf("   建议：%s\n", get_ph_suggestion(latest->ph, cfg));
+    printf("   建议：%s\n", getPhSuggestion(latest->ph, cfg));
     printf("\n");
 
     // 氨氮
@@ -215,7 +215,7 @@ void show_warning_after_login(int mode)
         printf("   状态：⚠️ 一般告警\n");
     else
         printf("   状态：✅ 正常\n");
-    printf("   建议：%s\n", get_ammonia_suggestion(latest->ammonia, cfg));
+    printf("   建议：%s\n", getAmmoniaSuggestion(latest->ammonia, cfg));
     printf("\n");
 
     printf("======================================================\n");
