@@ -250,7 +250,7 @@ void printWaterQualityAutoEnter(struct WaterQuality* quality) {
     } else if (quality->ph <= validRestriction->maxPh && quality->ph >= validRestriction->minPh) {
         phColor = COLOR_RED;
     } else {
-        doxygenColor = COLOR_GRAY;
+        phColor = COLOR_GRAY;
     }
     // 氨氮含量
     if (quality->ammonia <= normalRestriction->maxAmmonia && quality->ammonia >= normalRestriction->minAmmonia) {
@@ -260,7 +260,7 @@ void printWaterQualityAutoEnter(struct WaterQuality* quality) {
     } else if (quality->ammonia <= validRestriction->maxAmmonia && quality->ammonia >= validRestriction->minAmmonia) {
         ammoniaColor = COLOR_RED;
     } else {
-        doxygenColor = COLOR_GRAY;
+        ammoniaColor = COLOR_GRAY;
     }
     sprintf(buf, PRINT_WQ_WITH_COLOR_FMT, quality->id, tmpColor, quality->tmp, COLOR_WHITE, doxygenColor, quality->doxygen, COLOR_WHITE, phColor, quality->ph, COLOR_WHITE, ammoniaColor, quality->ammonia, COLOR_WHITE, quality->time);
     printDefaultAutoEnter(buf);
