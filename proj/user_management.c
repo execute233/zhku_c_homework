@@ -232,6 +232,7 @@ bool userLoginLoop() {
                     // 创建新用户
                     struct User* nu = (struct User*)malloc(sizeof(struct User));
                     strcpy(nu->username, name);
+                    strcpy(nu->password, pwd);
                     nu->is_admin = false;
                     addAList(user_list, nu);
                     saveUsers();
